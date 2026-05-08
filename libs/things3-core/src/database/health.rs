@@ -124,11 +124,10 @@ impl ThingsDatabase {
             .await
             .map_err(|e| ThingsError::unknown(format!("Failed to get task count: {e}")))?;
 
-        let project_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM TMTask WHERE type = 1")
-                .fetch_one(&self.pool)
-                .await
-                .map_err(|e| ThingsError::unknown(format!("Failed to get project count: {e}")))?;
+        let project_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM TMTask WHERE type = 1")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| ThingsError::unknown(format!("Failed to get project count: {e}")))?;
 
         let area_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM TMArea")
             .fetch_one(&self.pool)

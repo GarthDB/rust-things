@@ -320,11 +320,7 @@ mod query_tasks_tests {
         task_id
     }
 
-    async fn insert_task_with_tags(
-        db: &ThingsDatabase,
-        title: &str,
-        tags: &[&str],
-    ) -> ThingsId {
+    async fn insert_task_with_tags(db: &ThingsDatabase, title: &str, tags: &[&str]) -> ThingsId {
         insert_task(db, title, None, tags).await
     }
 
@@ -345,8 +341,7 @@ mod query_tasks_tests {
             .execute(&db)
             .await
             .unwrap();
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&a));
         assert!(uuids.contains(&b));
         assert!(!uuids.contains(&c));
@@ -360,8 +355,7 @@ mod query_tasks_tests {
             .execute(&db)
             .await
             .unwrap();
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&a));
         assert!(!uuids.contains(&b));
         assert!(uuids.contains(&c));
@@ -622,8 +616,7 @@ mod query_tasks_tests {
             .await
             .unwrap();
 
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&inc));
         assert!(uuids.contains(&comp));
         assert!(!uuids.contains(&canc));
@@ -643,8 +636,7 @@ mod query_tasks_tests {
             .await
             .unwrap();
 
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&todo));
         assert!(!uuids.contains(&project));
     }
@@ -696,8 +688,7 @@ mod query_tasks_tests {
             .await
             .unwrap();
 
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&target));
         assert_eq!(tasks.len(), 1);
     }
@@ -719,8 +710,7 @@ mod query_tasks_tests {
             .await
             .unwrap();
 
-        let uuids: std::collections::HashSet<_> =
-            tasks.iter().map(|t| t.uuid.clone()).collect();
+        let uuids: std::collections::HashSet<_> = tasks.iter().map(|t| t.uuid.clone()).collect();
         assert!(uuids.contains(&target));
         assert_eq!(tasks.len(), 1);
     }
@@ -1013,8 +1003,7 @@ mod query_tasks_tests {
 
             // Every streamed UUID must appear in the full query result, and
             // their relative order must be the same.
-            let stream_set: std::collections::HashSet<_> =
-                stream_uuids.iter().cloned().collect();
+            let stream_set: std::collections::HashSet<_> = stream_uuids.iter().cloned().collect();
             let filtered_full: Vec<ThingsId> = full_uuids
                 .into_iter()
                 .filter(|u| stream_set.contains(u))

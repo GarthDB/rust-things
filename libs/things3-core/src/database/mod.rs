@@ -2,8 +2,8 @@
 
 pub(crate) mod conversions;
 mod core;
-mod health;
 pub mod date_utils;
+mod health;
 pub mod mappers;
 mod mutations;
 pub(crate) mod path_discovery;
@@ -12,9 +12,9 @@ mod queries;
 pub mod query_builders;
 pub(crate) mod stats;
 pub mod tag_utils;
-pub mod validators;
 #[cfg(test)]
 mod tests;
+pub mod validators;
 
 // Re-export everything from core for backward compatibility
 pub use core::*;

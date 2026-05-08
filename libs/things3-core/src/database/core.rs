@@ -160,4 +160,3 @@ impl ThingsDatabase {
         &self.pool
     }
 }
-
