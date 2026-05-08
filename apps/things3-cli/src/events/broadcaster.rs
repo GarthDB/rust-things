@@ -1,162 +1,13 @@
-//! Event broadcasting system for task/project changes
-
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use things3_core::{Result, ThingsId};
+use things3_core::Result;
 use tokio::sync::{broadcast, RwLock};
 use uuid::Uuid;
 
 use crate::progress::ProgressUpdate;
 
-/// Event types for Things 3 entities
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "event_type")]
-pub enum EventType {
-    /// Task events
-    TaskCreated {
-        task_id: ThingsId,
-    },
-    TaskUpdated {
-        task_id: ThingsId,
-    },
-    TaskDeleted {
-        task_id: ThingsId,
-    },
-    TaskCompleted {
-        task_id: ThingsId,
-    },
-    TaskCancelled {
-        task_id: ThingsId,
-    },
-
-    /// Project events
-    ProjectCreated {
-        project_id: ThingsId,
-    },
-    ProjectUpdated {
-        project_id: ThingsId,
-    },
-    ProjectDeleted {
-        project_id: ThingsId,
-    },
-    ProjectCompleted {
-        project_id: ThingsId,
-    },
-
-    /// Area events
-    AreaCreated {
-        area_id: ThingsId,
-    },
-    AreaUpdated {
-        area_id: ThingsId,
-    },
-    AreaDeleted {
-        area_id: ThingsId,
-    },
-
-    /// Progress events
-    ProgressStarted {
-        operation_id: Uuid,
-    },
-    ProgressUpdated {
-        operation_id: Uuid,
-    },
-    ProgressCompleted {
-        operation_id: Uuid,
-    },
-    ProgressFailed {
-        operation_id: Uuid,
-    },
-}
-
-/// Event data structure
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Event {
-    pub id: Uuid,
-    pub event_type: EventType,
-    pub timestamp: DateTime<Utc>,
-    pub data: Option<serde_json::Value>,
-    pub source: String,
-}
-
-/// Event filter for subscriptions
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct EventFilter {
-    pub event_types: Option<Vec<EventType>>,
-    pub entity_ids: Option<Vec<ThingsId>>,
-    pub sources: Option<Vec<String>>,
-    pub since: Option<DateTime<Utc>>,
-}
-
-impl EventFilter {
-    /// Check if an event matches this filter
-    #[must_use]
-    pub fn matches(&self, event: &Event) -> bool {
-        // Check event types
-        if let Some(ref types) = self.event_types {
-            if !types
-                .iter()
-                .any(|t| std::mem::discriminant(t) == std::mem::discriminant(&event.event_type))
-            {
-                return false;
-            }
-        }
-
-        // Check entity IDs (applies to task/project/area events; progress events have no entity ID)
-        if let Some(ref ids) = self.entity_ids {
-            let event_entity_id: Option<&ThingsId> = match &event.event_type {
-                EventType::TaskCreated { task_id }
-                | EventType::TaskUpdated { task_id }
-                | EventType::TaskDeleted { task_id }
-                | EventType::TaskCompleted { task_id }
-                | EventType::TaskCancelled { task_id } => Some(task_id),
-                EventType::ProjectCreated { project_id }
-                | EventType::ProjectUpdated { project_id }
-                | EventType::ProjectDeleted { project_id }
-                | EventType::ProjectCompleted { project_id } => Some(project_id),
-                EventType::AreaCreated { area_id }
-                | EventType::AreaUpdated { area_id }
-                | EventType::AreaDeleted { area_id } => Some(area_id),
-                EventType::ProgressStarted { .. }
-                | EventType::ProgressUpdated { .. }
-                | EventType::ProgressCompleted { .. }
-                | EventType::ProgressFailed { .. } => None,
-            };
-
-            if let Some(entity_id) = event_entity_id {
-                if !ids.contains(entity_id) {
-                    return false;
-                }
-            }
-        }
-
-        // Check sources
-        if let Some(ref sources) = self.sources {
-            if !sources.contains(&event.source) {
-                return false;
-            }
-        }
-
-        // Check timestamp
-        if let Some(since) = self.since {
-            if event.timestamp < since {
-                return false;
-            }
-        }
-
-        true
-    }
-}
-
-/// Event subscription
-#[derive(Debug, Clone)]
-pub struct EventSubscription {
-    pub id: Uuid,
-    pub filter: EventFilter,
-    pub sender: broadcast::Sender<Event>,
-}
+use super::filter::{EventFilter, EventSubscription};
+use super::types::{Event, EventType};
 
 /// Event broadcaster for managing and broadcasting events
 pub struct EventBroadcaster {
@@ -226,14 +77,13 @@ impl EventBroadcaster {
     pub async fn broadcast_task_event(
         &self,
         event_type: EventType,
-        _task_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
         let event = Event {
             id: Uuid::new_v4(),
             event_type,
-            timestamp: Utc::now(),
+            timestamp: chrono::Utc::now(),
             data,
             source: source.to_string(),
         };
@@ -248,14 +98,13 @@ impl EventBroadcaster {
     pub async fn broadcast_project_event(
         &self,
         event_type: EventType,
-        _project_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
         let event = Event {
             id: Uuid::new_v4(),
             event_type,
-            timestamp: Utc::now(),
+            timestamp: chrono::Utc::now(),
             data,
             source: source.to_string(),
         };
@@ -270,14 +119,13 @@ impl EventBroadcaster {
     pub async fn broadcast_area_event(
         &self,
         event_type: EventType,
-        _area_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
         let event = Event {
             id: Uuid::new_v4(),
             event_type,
-            timestamp: Utc::now(),
+            timestamp: chrono::Utc::now(),
             data,
             source: source.to_string(),
         };
@@ -292,14 +140,13 @@ impl EventBroadcaster {
     pub async fn broadcast_progress_event(
         &self,
         event_type: EventType,
-        _operation_id: Uuid,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
         let event = Event {
             id: Uuid::new_v4(),
             event_type,
-            timestamp: Utc::now(),
+            timestamp: chrono::Utc::now(),
             data,
             source: source.to_string(),
         };
@@ -333,7 +180,7 @@ impl EventBroadcaster {
         };
 
         let data = serde_json::to_value(&update)?;
-        self.broadcast_progress_event(event_type, update.operation_id, Some(data), source)
+        self.broadcast_progress_event(event_type, Some(data), source)
             .await
     }
 
@@ -355,114 +202,14 @@ impl Default for EventBroadcaster {
     }
 }
 
-/// Event listener for handling events
-pub struct EventListener {
-    broadcaster: Arc<EventBroadcaster>,
-    #[allow(dead_code)]
-    subscriptions: Vec<Uuid>,
-}
-
-impl EventListener {
-    /// Create a new event listener
-    #[must_use]
-    pub fn new(broadcaster: Arc<EventBroadcaster>) -> Self {
-        Self {
-            broadcaster,
-            subscriptions: Vec::new(),
-        }
-    }
-
-    /// Subscribe to specific event types
-    pub async fn subscribe_to_events(
-        &mut self,
-        event_types: Vec<EventType>,
-    ) -> broadcast::Receiver<Event> {
-        let filter = EventFilter {
-            event_types: Some(event_types),
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-
-        self.broadcaster.subscribe(filter).await
-    }
-
-    /// Subscribe to events for a specific entity
-    pub async fn subscribe_to_entity(&mut self, entity_id: ThingsId) -> broadcast::Receiver<Event> {
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: Some(vec![entity_id]),
-            sources: None,
-            since: None,
-        };
-
-        self.broadcaster.subscribe(filter).await
-    }
-
-    /// Subscribe to all events
-    #[must_use]
-    pub fn subscribe_to_all(&self) -> broadcast::Receiver<Event> {
-        self.broadcaster.subscribe_all()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_event_creation() {
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            timestamp: Utc::now(),
-            data: None,
-            source: "test".to_string(),
-        };
-
-        assert!(!event.id.is_nil());
-        assert_eq!(event.source, "test");
-    }
-
-    #[test]
-    fn test_event_filter_matching() {
-        let task_id = ThingsId::new_v4();
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: task_id.clone(),
-            },
-            timestamp: Utc::now(),
-            data: None,
-            source: "test".to_string(),
-        };
-
-        let filter = EventFilter {
-            event_types: Some(vec![EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-
-        // Should match event type
-        assert!(filter.matches(&event));
-
-        let filter_no_match = EventFilter {
-            event_types: Some(vec![EventType::TaskUpdated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-
-        // Should not match different event type
-        assert!(!filter_no_match.matches(&event));
-    }
+    use crate::events::{Event, EventFilter, EventType};
+    use chrono::Utc;
+    use std::sync::Arc;
+    use things3_core::ThingsId;
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn test_event_broadcaster() {
@@ -525,6 +272,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_progress_update_to_event() {
+        use crate::progress::ProgressUpdate;
         let broadcaster = EventBroadcaster::new();
         let mut receiver = broadcaster.subscribe_all();
 
@@ -547,265 +295,6 @@ mod tests {
         assert_eq!(received_event.source, "test");
     }
 
-    #[test]
-    fn test_event_filter_entity_ids() {
-        let task_id = ThingsId::new_v4();
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: task_id.clone(),
-            },
-            timestamp: Utc::now(),
-            data: None,
-            source: "test".to_string(),
-        };
-
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: Some(vec![task_id]),
-            sources: None,
-            since: None,
-        };
-
-        assert!(filter.matches(&event));
-
-        let filter_no_match = EventFilter {
-            event_types: None,
-            entity_ids: Some(vec![ThingsId::new_v4()]),
-            sources: None,
-            since: None,
-        };
-
-        assert!(!filter_no_match.matches(&event));
-    }
-
-    #[test]
-    fn test_event_filter_sources() {
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            timestamp: Utc::now(),
-            data: None,
-            source: "test_source".to_string(),
-        };
-
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: Some(vec!["test_source".to_string()]),
-            since: None,
-        };
-
-        assert!(filter.matches(&event));
-
-        let filter_no_match = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: Some(vec!["other_source".to_string()]),
-            since: None,
-        };
-
-        assert!(!filter_no_match.matches(&event));
-    }
-
-    #[test]
-    fn test_event_filter_timestamp() {
-        let now = Utc::now();
-        let past = now - chrono::Duration::hours(1);
-        let future = now + chrono::Duration::hours(1);
-
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            timestamp: now,
-            data: None,
-            source: "test".to_string(),
-        };
-
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: None,
-            since: Some(past),
-        };
-
-        assert!(filter.matches(&event));
-
-        let filter_no_match = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: None,
-            since: Some(future),
-        };
-
-        assert!(!filter_no_match.matches(&event));
-    }
-
-    #[test]
-    fn test_event_filter_all_event_types() {
-        let task_id = ThingsId::new_v4();
-        let project_id = ThingsId::new_v4();
-        let area_id = ThingsId::new_v4();
-        let operation_id = Uuid::new_v4();
-
-        let events = vec![
-            Event {
-                id: Uuid::new_v4(),
-                event_type: EventType::TaskCreated {
-                    task_id: task_id.clone(),
-                },
-                timestamp: Utc::now(),
-                data: None,
-                source: "test".to_string(),
-            },
-            Event {
-                id: Uuid::new_v4(),
-                event_type: EventType::ProjectCreated {
-                    project_id: project_id.clone(),
-                },
-                timestamp: Utc::now(),
-                data: None,
-                source: "test".to_string(),
-            },
-            Event {
-                id: Uuid::new_v4(),
-                event_type: EventType::AreaCreated {
-                    area_id: area_id.clone(),
-                },
-                timestamp: Utc::now(),
-                data: None,
-                source: "test".to_string(),
-            },
-            Event {
-                id: Uuid::new_v4(),
-                event_type: EventType::ProgressStarted { operation_id },
-                timestamp: Utc::now(),
-                data: None,
-                source: "test".to_string(),
-            },
-        ];
-
-        for event in events {
-            let filter = EventFilter {
-                event_types: None,
-                entity_ids: None,
-                sources: None,
-                since: None,
-            };
-            assert!(filter.matches(&event));
-        }
-    }
-
-    #[test]
-    fn test_event_filter_entity_id_extraction() {
-        let task_id = ThingsId::new_v4();
-        let project_id = ThingsId::new_v4();
-        let area_id = ThingsId::new_v4();
-        let operation_id = Uuid::new_v4();
-
-        let events: Vec<(EventType, Option<ThingsId>)> = vec![
-            (
-                EventType::TaskCreated {
-                    task_id: task_id.clone(),
-                },
-                Some(task_id.clone()),
-            ),
-            (
-                EventType::TaskUpdated {
-                    task_id: task_id.clone(),
-                },
-                Some(task_id.clone()),
-            ),
-            (
-                EventType::TaskDeleted {
-                    task_id: task_id.clone(),
-                },
-                Some(task_id.clone()),
-            ),
-            (
-                EventType::TaskCompleted {
-                    task_id: task_id.clone(),
-                },
-                Some(task_id.clone()),
-            ),
-            (
-                EventType::TaskCancelled {
-                    task_id: task_id.clone(),
-                },
-                Some(task_id.clone()),
-            ),
-            (
-                EventType::ProjectCreated {
-                    project_id: project_id.clone(),
-                },
-                Some(project_id.clone()),
-            ),
-            (
-                EventType::ProjectUpdated {
-                    project_id: project_id.clone(),
-                },
-                Some(project_id.clone()),
-            ),
-            (
-                EventType::ProjectDeleted {
-                    project_id: project_id.clone(),
-                },
-                Some(project_id.clone()),
-            ),
-            (
-                EventType::ProjectCompleted {
-                    project_id: project_id.clone(),
-                },
-                Some(project_id.clone()),
-            ),
-            (
-                EventType::AreaCreated {
-                    area_id: area_id.clone(),
-                },
-                Some(area_id.clone()),
-            ),
-            (
-                EventType::AreaUpdated {
-                    area_id: area_id.clone(),
-                },
-                Some(area_id.clone()),
-            ),
-            (
-                EventType::AreaDeleted {
-                    area_id: area_id.clone(),
-                },
-                Some(area_id.clone()),
-            ),
-            (EventType::ProgressStarted { operation_id }, None),
-            (EventType::ProgressUpdated { operation_id }, None),
-            (EventType::ProgressCompleted { operation_id }, None),
-            (EventType::ProgressFailed { operation_id }, None),
-        ];
-
-        for (event_type, expected_id) in events {
-            let event = Event {
-                id: Uuid::new_v4(),
-                event_type,
-                timestamp: Utc::now(),
-                data: None,
-                source: "test".to_string(),
-            };
-
-            let filter = EventFilter {
-                event_types: None,
-                entity_ids: expected_id.map(|id| vec![id]),
-                sources: None,
-                since: None,
-            };
-
-            assert!(filter.matches(&event));
-        }
-    }
-
     #[tokio::test]
     async fn test_event_broadcaster_subscribe_all() {
         let broadcaster = EventBroadcaster::new();
@@ -825,88 +314,6 @@ mod tests {
 
         let received_event = receiver.recv().await.unwrap();
         assert_eq!(received_event.id, event.id);
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_creation() {
-        let broadcaster = EventBroadcaster::new();
-        let listener = EventListener::new(Arc::new(broadcaster));
-        assert_eq!(listener.subscriptions.len(), 0);
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_subscribe_to_events() {
-        let broadcaster = EventBroadcaster::new();
-        let mut listener = EventListener::new(Arc::new(broadcaster));
-
-        let event_types = vec![EventType::TaskCreated {
-            task_id: ThingsId::new_v4(),
-        }];
-        let mut receiver = listener.subscribe_to_events(event_types).await;
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_subscribe_to_entity() {
-        let broadcaster = EventBroadcaster::new();
-        let mut listener = EventListener::new(Arc::new(broadcaster));
-
-        let entity_id = ThingsId::new_v4();
-        let mut receiver = listener.subscribe_to_entity(entity_id).await;
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_subscribe_to_all() {
-        let broadcaster = EventBroadcaster::new();
-        let listener = EventListener::new(Arc::new(broadcaster));
-
-        let mut receiver = listener.subscribe_to_all();
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[test]
-    fn test_event_serialization() {
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            timestamp: Utc::now(),
-            data: Some(serde_json::json!({"key": "value"})),
-            source: "test".to_string(),
-        };
-
-        let json = serde_json::to_string(&event).unwrap();
-        let deserialized: Event = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(event.id, deserialized.id);
-        assert_eq!(event.source, deserialized.source);
-    }
-
-    #[test]
-    fn test_event_filter_serialization() {
-        let filter = EventFilter {
-            event_types: Some(vec![EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: Some(vec![ThingsId::new_v4()]),
-            sources: Some(vec!["test".to_string()]),
-            since: Some(Utc::now()),
-        };
-
-        let json = serde_json::to_string(&filter).unwrap();
-        let deserialized: EventFilter = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(filter.event_types, deserialized.event_types);
-        assert_eq!(filter.entity_ids, deserialized.entity_ids);
-        assert_eq!(filter.sources, deserialized.sources);
     }
 
     #[tokio::test]
@@ -943,7 +350,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Task"}));
 
         broadcaster
-            .broadcast_task_event(event_type, task_id, data, "test")
+            .broadcast_task_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -963,7 +370,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Project"}));
 
         broadcaster
-            .broadcast_project_event(event_type, project_id, data, "test")
+            .broadcast_project_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -983,7 +390,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Area"}));
 
         broadcaster
-            .broadcast_area_event(event_type, area_id, data, "test")
+            .broadcast_area_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -1001,7 +408,7 @@ mod tests {
         let data = Some(serde_json::json!({"message": "Starting operation"}));
 
         broadcaster
-            .broadcast_progress_event(event_type, operation_id, data, "test")
+            .broadcast_progress_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -1011,6 +418,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_event_broadcaster_broadcast_progress_update() {
+        use crate::progress::ProgressUpdate;
         let broadcaster = EventBroadcaster::new();
         let mut receiver = broadcaster.subscribe_all();
 
@@ -1242,149 +650,6 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[test]
-    fn test_event_subscription_creation() {
-        let subscription_id = Uuid::new_v4();
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-        let (sender, _receiver) = broadcast::channel(100);
-
-        let subscription = EventSubscription {
-            id: subscription_id,
-            filter,
-            sender,
-        };
-
-        assert_eq!(subscription.id, subscription_id);
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_with_actual_broadcaster() {
-        let broadcaster = Arc::new(EventBroadcaster::new());
-        let mut listener = EventListener::new(broadcaster);
-
-        let event_types = vec![EventType::TaskCreated {
-            task_id: ThingsId::new_v4(),
-        }];
-        let mut receiver = listener.subscribe_to_events(event_types).await;
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_subscribe_to_entity_with_actual_broadcaster() {
-        let broadcaster = Arc::new(EventBroadcaster::new());
-        let mut listener = EventListener::new(broadcaster);
-
-        let entity_id = ThingsId::new_v4();
-        let mut receiver = listener.subscribe_to_entity(entity_id).await;
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[tokio::test]
-    async fn test_event_listener_subscribe_to_all_with_actual_broadcaster() {
-        let broadcaster = Arc::new(EventBroadcaster::new());
-        let listener = EventListener::new(broadcaster);
-
-        let mut receiver = listener.subscribe_to_all();
-
-        // This should not panic
-        assert!(receiver.try_recv().is_err());
-    }
-
-    #[test]
-    fn test_all_event_types_creation() {
-        let task_id = ThingsId::new_v4();
-        let project_id = ThingsId::new_v4();
-        let area_id = ThingsId::new_v4();
-        let operation_id = Uuid::new_v4();
-
-        // Test all task event types
-        let _ = EventType::TaskCreated {
-            task_id: task_id.clone(),
-        };
-        let _ = EventType::TaskUpdated {
-            task_id: task_id.clone(),
-        };
-        let _ = EventType::TaskDeleted {
-            task_id: task_id.clone(),
-        };
-        let _ = EventType::TaskCompleted {
-            task_id: task_id.clone(),
-        };
-        let _ = EventType::TaskCancelled { task_id };
-
-        // Test all project event types
-        let _ = EventType::ProjectCreated {
-            project_id: project_id.clone(),
-        };
-        let _ = EventType::ProjectUpdated {
-            project_id: project_id.clone(),
-        };
-        let _ = EventType::ProjectDeleted {
-            project_id: project_id.clone(),
-        };
-        let _ = EventType::ProjectCompleted { project_id };
-
-        // Test all area event types
-        let _ = EventType::AreaCreated {
-            area_id: area_id.clone(),
-        };
-        let _ = EventType::AreaUpdated {
-            area_id: area_id.clone(),
-        };
-        let _ = EventType::AreaDeleted { area_id };
-
-        // Test all progress event types
-        let _ = EventType::ProgressStarted { operation_id };
-        let _ = EventType::ProgressUpdated { operation_id };
-        let _ = EventType::ProgressCompleted { operation_id };
-        let _ = EventType::ProgressFailed { operation_id };
-
-        // All should compile without errors
-    }
-
-    #[test]
-    fn test_event_creation_with_data() {
-        let event = Event {
-            id: Uuid::new_v4(),
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            timestamp: Utc::now(),
-            data: Some(serde_json::json!({"key": "value"})),
-            source: "test".to_string(),
-        };
-
-        assert!(!event.id.is_nil());
-        assert_eq!(event.source, "test");
-        assert!(event.data.is_some());
-    }
-
-    #[test]
-    fn test_event_filter_creation() {
-        let filter = EventFilter {
-            event_types: Some(vec![EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: Some(vec![ThingsId::new_v4()]),
-            sources: Some(vec!["test".to_string()]),
-            since: Some(Utc::now()),
-        };
-
-        assert!(filter.event_types.is_some());
-        assert!(filter.entity_ids.is_some());
-        assert!(filter.sources.is_some());
-        assert!(filter.since.is_some());
-    }
-
     #[tokio::test]
     async fn test_event_broadcaster_subscription_count() {
         let broadcaster = EventBroadcaster::new();
@@ -1419,280 +684,6 @@ mod tests {
 
         // Should have two subscriptions now
         assert_eq!(broadcaster.subscription_count().await, 2);
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_matching_with_timestamp() {
-        let filter = EventFilter {
-            event_types: Some(vec![EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: None,
-            sources: None,
-            since: Some(Utc::now() - chrono::Duration::hours(1)),
-        };
-
-        let event = Event {
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        assert!(filter.matches(&event));
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_matching_with_sources() {
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: Some(vec!["test_source".to_string()]),
-            since: None,
-        };
-
-        let event = Event {
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test_source".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        assert!(filter.matches(&event));
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_matching_with_entity_ids() {
-        let entity_id = ThingsId::new_v4();
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: Some(vec![entity_id.clone()]),
-            sources: None,
-            since: None,
-        };
-
-        let event = Event {
-            event_type: EventType::TaskCreated { task_id: entity_id },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        assert!(filter.matches(&event));
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_matching_no_match() {
-        let filter = EventFilter {
-            event_types: Some(vec![EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            }]),
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-
-        let event = Event {
-            event_type: EventType::ProjectCreated {
-                project_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        assert!(!filter.matches(&event));
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_matching_empty_filter() {
-        let filter = EventFilter {
-            event_types: None,
-            entity_ids: None,
-            sources: None,
-            since: None,
-        };
-
-        let event = Event {
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        // Empty filter should match all events
-        assert!(filter.matches(&event));
-    }
-
-    #[tokio::test]
-    async fn test_event_creation_without_data() {
-        let event = Event {
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: None,
-        };
-
-        assert_eq!(event.source, "test");
-        assert!(event.data.is_none());
-    }
-
-    #[tokio::test]
-    async fn test_event_type_entity_id_extraction_comprehensive() {
-        let task_id = ThingsId::new_v4();
-        let project_id = ThingsId::new_v4();
-        let area_id = ThingsId::new_v4();
-        let operation_id = Uuid::new_v4();
-
-        // Test all event types
-        let events = vec![
-            EventType::TaskCreated {
-                task_id: task_id.clone(),
-            },
-            EventType::TaskUpdated {
-                task_id: task_id.clone(),
-            },
-            EventType::TaskDeleted {
-                task_id: task_id.clone(),
-            },
-            EventType::TaskCompleted {
-                task_id: task_id.clone(),
-            },
-            EventType::TaskCancelled { task_id },
-            EventType::ProjectCreated {
-                project_id: project_id.clone(),
-            },
-            EventType::ProjectUpdated {
-                project_id: project_id.clone(),
-            },
-            EventType::ProjectDeleted {
-                project_id: project_id.clone(),
-            },
-            EventType::ProjectCompleted { project_id },
-            EventType::AreaCreated {
-                area_id: area_id.clone(),
-            },
-            EventType::AreaUpdated {
-                area_id: area_id.clone(),
-            },
-            EventType::AreaDeleted { area_id },
-            EventType::ProgressStarted { operation_id },
-            EventType::ProgressUpdated { operation_id },
-            EventType::ProgressCompleted { operation_id },
-            EventType::ProgressFailed { operation_id },
-        ];
-
-        // Mirror the production event_entity_id match in EventFilter::matches.
-        // Entity events yield Some(ThingsId); progress events yield None because
-        // operation_id is an internal Uuid, not a ThingsId entity identifier.
-        for event_type in &events {
-            let extracted_id: Option<&ThingsId> = match event_type {
-                EventType::TaskCreated { task_id }
-                | EventType::TaskUpdated { task_id }
-                | EventType::TaskDeleted { task_id }
-                | EventType::TaskCompleted { task_id }
-                | EventType::TaskCancelled { task_id } => Some(task_id),
-                EventType::ProjectCreated { project_id }
-                | EventType::ProjectUpdated { project_id }
-                | EventType::ProjectDeleted { project_id }
-                | EventType::ProjectCompleted { project_id } => Some(project_id),
-                EventType::AreaCreated { area_id }
-                | EventType::AreaUpdated { area_id }
-                | EventType::AreaDeleted { area_id } => Some(area_id),
-                EventType::ProgressStarted { .. }
-                | EventType::ProgressUpdated { .. }
-                | EventType::ProgressCompleted { .. }
-                | EventType::ProgressFailed { .. } => None,
-            };
-
-            let is_progress = matches!(
-                event_type,
-                EventType::ProgressStarted { .. }
-                    | EventType::ProgressUpdated { .. }
-                    | EventType::ProgressCompleted { .. }
-                    | EventType::ProgressFailed { .. }
-            );
-            if is_progress {
-                assert!(
-                    extracted_id.is_none(),
-                    "progress events must not have a ThingsId"
-                );
-            } else {
-                assert!(
-                    extracted_id.is_some(),
-                    "entity events must carry a ThingsId"
-                );
-            }
-        }
-    }
-
-    #[tokio::test]
-    async fn test_event_serialization_roundtrip() {
-        let original_event = Event {
-            event_type: EventType::TaskCreated {
-                task_id: ThingsId::new_v4(),
-            },
-            id: Uuid::new_v4(),
-            source: "test".to_string(),
-            timestamp: Utc::now(),
-            data: Some(serde_json::json!({"title": "Test Task"})),
-        };
-
-        // Serialize to JSON
-        let json = serde_json::to_string(&original_event).unwrap();
-
-        // Deserialize back to Event
-        let deserialized_event: Event = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(original_event.event_type, deserialized_event.event_type);
-        assert_eq!(original_event.id, deserialized_event.id);
-        assert_eq!(original_event.source, deserialized_event.source);
-        assert_eq!(original_event.data, deserialized_event.data);
-    }
-
-    #[tokio::test]
-    async fn test_event_filter_serialization_roundtrip() {
-        let original_filter = EventFilter {
-            event_types: Some(vec![
-                EventType::TaskCreated {
-                    task_id: ThingsId::new_v4(),
-                },
-                EventType::ProjectCreated {
-                    project_id: ThingsId::new_v4(),
-                },
-            ]),
-            entity_ids: Some(vec![ThingsId::new_v4(), ThingsId::new_v4()]),
-            sources: Some(vec![
-                "test_source".to_string(),
-                "another_source".to_string(),
-            ]),
-            since: Some(Utc::now()),
-        };
-
-        // Serialize to JSON
-        let json = serde_json::to_string(&original_filter).unwrap();
-
-        // Deserialize back to EventFilter
-        let deserialized_filter: EventFilter = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(original_filter.event_types, deserialized_filter.event_types);
-        assert_eq!(original_filter.entity_ids, deserialized_filter.entity_ids);
-        assert_eq!(original_filter.sources, deserialized_filter.sources);
-        assert_eq!(original_filter.since, deserialized_filter.since);
     }
 
     #[tokio::test]
