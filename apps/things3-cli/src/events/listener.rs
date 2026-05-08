@@ -51,3 +51,92 @@ impl EventListener {
         self.broadcaster.subscribe_all()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::events::{EventBroadcaster, EventType};
+    use std::sync::Arc;
+    use things3_core::ThingsId;
+
+    #[tokio::test]
+    async fn test_event_listener_creation() {
+        let broadcaster = EventBroadcaster::new();
+        // Verify EventListener::new succeeds without panicking
+        let _listener = EventListener::new(Arc::new(broadcaster));
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_subscribe_to_events() {
+        let broadcaster = EventBroadcaster::new();
+        let mut listener = EventListener::new(Arc::new(broadcaster));
+
+        let event_types = vec![EventType::TaskCreated {
+            task_id: ThingsId::new_v4(),
+        }];
+        let mut receiver = listener.subscribe_to_events(event_types).await;
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_subscribe_to_entity() {
+        let broadcaster = EventBroadcaster::new();
+        let mut listener = EventListener::new(Arc::new(broadcaster));
+
+        let entity_id = ThingsId::new_v4();
+        let mut receiver = listener.subscribe_to_entity(entity_id).await;
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_subscribe_to_all() {
+        let broadcaster = EventBroadcaster::new();
+        let listener = EventListener::new(Arc::new(broadcaster));
+
+        let mut receiver = listener.subscribe_to_all();
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_with_actual_broadcaster() {
+        let broadcaster = Arc::new(EventBroadcaster::new());
+        let mut listener = EventListener::new(broadcaster);
+
+        let event_types = vec![EventType::TaskCreated {
+            task_id: ThingsId::new_v4(),
+        }];
+        let mut receiver = listener.subscribe_to_events(event_types).await;
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_subscribe_to_entity_with_actual_broadcaster() {
+        let broadcaster = Arc::new(EventBroadcaster::new());
+        let mut listener = EventListener::new(broadcaster);
+
+        let entity_id = ThingsId::new_v4();
+        let mut receiver = listener.subscribe_to_entity(entity_id).await;
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn test_event_listener_subscribe_to_all_with_actual_broadcaster() {
+        let broadcaster = Arc::new(EventBroadcaster::new());
+        let listener = EventListener::new(broadcaster);
+
+        let mut receiver = listener.subscribe_to_all();
+
+        // This should not panic
+        assert!(receiver.try_recv().is_err());
+    }
+}
