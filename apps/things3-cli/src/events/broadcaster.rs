@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use things3_core::{Result, ThingsId};
+use things3_core::Result;
 use tokio::sync::{broadcast, RwLock};
 use uuid::Uuid;
 
@@ -11,8 +11,8 @@ use super::types::{Event, EventType};
 
 /// Event broadcaster for managing and broadcasting events
 pub struct EventBroadcaster {
-    pub(super) sender: broadcast::Sender<Event>,
-    pub(super) subscriptions: Arc<RwLock<HashMap<Uuid, EventSubscription>>>,
+    sender: broadcast::Sender<Event>,
+    subscriptions: Arc<RwLock<HashMap<Uuid, EventSubscription>>>,
 }
 
 impl EventBroadcaster {
@@ -77,7 +77,6 @@ impl EventBroadcaster {
     pub async fn broadcast_task_event(
         &self,
         event_type: EventType,
-        _task_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
@@ -99,7 +98,6 @@ impl EventBroadcaster {
     pub async fn broadcast_project_event(
         &self,
         event_type: EventType,
-        _project_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
@@ -121,7 +119,6 @@ impl EventBroadcaster {
     pub async fn broadcast_area_event(
         &self,
         event_type: EventType,
-        _area_id: ThingsId,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
@@ -143,7 +140,6 @@ impl EventBroadcaster {
     pub async fn broadcast_progress_event(
         &self,
         event_type: EventType,
-        _operation_id: Uuid,
         data: Option<serde_json::Value>,
         source: &str,
     ) -> Result<()> {
@@ -184,7 +180,7 @@ impl EventBroadcaster {
         };
 
         let data = serde_json::to_value(&update)?;
-        self.broadcast_progress_event(event_type, update.operation_id, Some(data), source)
+        self.broadcast_progress_event(event_type, Some(data), source)
             .await
     }
 

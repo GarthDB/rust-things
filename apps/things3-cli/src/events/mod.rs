@@ -553,7 +553,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Task"}));
 
         broadcaster
-            .broadcast_task_event(event_type, task_id, data, "test")
+            .broadcast_task_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -573,7 +573,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Project"}));
 
         broadcaster
-            .broadcast_project_event(event_type, project_id, data, "test")
+            .broadcast_project_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -593,7 +593,7 @@ mod tests {
         let data = Some(serde_json::json!({"title": "Test Area"}));
 
         broadcaster
-            .broadcast_area_event(event_type, area_id, data, "test")
+            .broadcast_area_event(event_type, data, "test")
             .await
             .unwrap();
 
@@ -611,7 +611,7 @@ mod tests {
         let data = Some(serde_json::json!({"message": "Starting operation"}));
 
         broadcaster
-            .broadcast_progress_event(event_type, operation_id, data, "test")
+            .broadcast_progress_event(event_type, data, "test")
             .await
             .unwrap();
 
