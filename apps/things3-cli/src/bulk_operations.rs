@@ -64,7 +64,6 @@ impl BulkOperationsManager {
                     EventType::TaskUpdated {
                         task_id: task.uuid.clone(),
                     },
-                    task.uuid.clone(),
                     Some(serde_json::to_value(task)?),
                     "bulk_export",
                 )
@@ -119,7 +118,6 @@ impl BulkOperationsManager {
                     EventType::TaskUpdated {
                         task_id: task_id.clone(),
                     },
-                    task_id.clone(),
                     Some(serde_json::json!({ "status": format!("{:?}", new_status) })),
                     "bulk_update",
                 )
@@ -179,7 +177,6 @@ impl BulkOperationsManager {
                     EventType::TaskUpdated {
                         task_id: task.uuid.clone(),
                     },
-                    task.uuid.clone(),
                     Some(serde_json::to_value(task)?),
                     "search_and_process",
                 )
