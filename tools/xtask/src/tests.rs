@@ -4,7 +4,6 @@ use clap::Parser;
 // Serialize all tests that mutate the process-global cwd.
 static CWD_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
-
 #[test]
 fn test_cli_parsing() {
     // Test that CLI can be parsed without panicking
@@ -421,9 +420,7 @@ fn test_git_hooks_content() {
         if let Ok(pre_commit_content) = std::fs::read_to_string(".git/hooks/pre-commit") {
             // Check if hook has content (can be empty in some CI environments)
             if pre_commit_content.is_empty() {
-                println!(
-                    "⚠️  Warning: Pre-commit hook is empty (may be a CI environment issue)"
-                );
+                println!("⚠️  Warning: Pre-commit hook is empty (may be a CI environment issue)");
                 return; // Skip remaining checks
             }
 
