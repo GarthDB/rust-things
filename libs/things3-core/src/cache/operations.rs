@@ -3,7 +3,7 @@ use anyhow::Result;
 use moka::future::Cache;
 
 use super::config::{CacheConfig, CacheDependency};
-use super::stats::{CachedData, CachePreloader, CacheStats};
+use super::stats::{CachePreloader, CacheStats, CachedData};
 use super::ThingsCache;
 
 impl ThingsCache {
@@ -593,10 +593,7 @@ where
 /// Returns the number of keys submitted for eviction. Moka's `invalidate` is
 /// async but the actual removal may lag slightly; callers that need to observe
 /// the post-eviction state should `await` a short yield or sleep.
-async fn evict_keys<V>(
-    cache: &moka::future::Cache<String, CachedData<V>>,
-    keys: &[String],
-) -> usize
+async fn evict_keys<V>(cache: &moka::future::Cache<String, CachedData<V>>, keys: &[String]) -> usize
 where
     V: Clone + Send + Sync + 'static,
 {

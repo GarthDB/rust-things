@@ -12,8 +12,7 @@ pub(super) fn export_taskpaper(data: &ExportData) -> String {
 
     // --- Areas → their projects → tasks ---
     for area in &data.areas {
-        let area_meta =
-            taskpaper_metadata(TaskStatus::Incomplete, None, None, None, &area.tags);
+        let area_meta = taskpaper_metadata(TaskStatus::Incomplete, None, None, None, &area.tags);
         writeln!(out, "{}:{area_meta}", escape_taskpaper_title(&area.title)).unwrap();
 
         let area_projects: Vec<&crate::models::Project> = data
@@ -56,18 +55,22 @@ pub(super) fn export_taskpaper(data: &ExportData) -> String {
         if let Some(notes) = &project.notes {
             write_taskpaper_notes(&mut out, notes, 1);
         }
-        for task in data.tasks.iter().filter(|t| {
-            t.project_uuid.as_ref() == Some(&project.uuid) && t.parent_uuid.is_none()
-        }) {
+        for task in data
+            .tasks
+            .iter()
+            .filter(|t| t.project_uuid.as_ref() == Some(&project.uuid) && t.parent_uuid.is_none())
+        {
             write_taskpaper_task(&mut out, task, 1, &data.tasks);
         }
         writeln!(out).unwrap();
     }
 
     // --- Orphan tasks (no project, no area, no parent) ---
-    for task in data.tasks.iter().filter(|t| {
-        t.project_uuid.is_none() && t.area_uuid.is_none() && t.parent_uuid.is_none()
-    }) {
+    for task in data
+        .tasks
+        .iter()
+        .filter(|t| t.project_uuid.is_none() && t.area_uuid.is_none() && t.parent_uuid.is_none())
+    {
         write_taskpaper_task(&mut out, task, 0, &data.tasks);
     }
 

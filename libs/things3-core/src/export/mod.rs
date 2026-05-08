@@ -145,13 +145,6 @@ impl DataExporter {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[cfg(any(feature = "export-taskpaper", feature = "export-ical"))]
-    use crate::models::ThingsId;
-    use crate::models::TaskStatus;
-    #[cfg(any(feature = "export-csv", feature = "export-taskpaper", feature = "export-ical"))]
-    use crate::models::TaskType;
-    use crate::test_utils::{create_mock_areas, create_mock_projects, create_mock_tasks};
     #[cfg(feature = "export-csv")]
     use super::csv::{
         escape_csv, format_date_csv, format_datetime_csv, format_task_status_csv,
@@ -161,6 +154,17 @@ mod tests {
     use super::opml::escape_xml;
     #[cfg(feature = "export-taskpaper")]
     use super::taskpaper::{escape_taskpaper_title, sanitize_taskpaper_tag};
+    use super::*;
+    use crate::models::TaskStatus;
+    #[cfg(any(
+        feature = "export-csv",
+        feature = "export-taskpaper",
+        feature = "export-ical"
+    ))]
+    use crate::models::TaskType;
+    #[cfg(any(feature = "export-taskpaper", feature = "export-ical"))]
+    use crate::models::ThingsId;
+    use crate::test_utils::{create_mock_areas, create_mock_projects, create_mock_tasks};
     #[cfg(any(feature = "export-taskpaper", feature = "export-ical"))]
     use std::str::FromStr;
 

@@ -7,7 +7,7 @@ mod stats;
 
 pub use config::{CacheConfig, CacheDependency, InvalidationStrategy};
 pub use preloader::{keys, DefaultPreloader};
-pub use stats::{CachedData, CachePreloader, CacheStats};
+pub use stats::{CachePreloader, CacheStats, CachedData};
 
 use crate::models::{Area, Project, Task};
 use moka::future::Cache;

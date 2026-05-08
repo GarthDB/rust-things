@@ -14,7 +14,9 @@ pub(super) fn export_csv(data: &ExportData) -> String {
 
     // Export tasks
     if !data.tasks.is_empty() {
-        csv.push_str("Type,Title,Status,Notes,Start Date,Deadline,Created,Modified,Project,Area,Parent\n");
+        csv.push_str(
+            "Type,Title,Status,Notes,Start Date,Deadline,Created,Modified,Project,Area,Parent\n",
+        );
         for task in &data.tasks {
             writeln!(
                 csv,
