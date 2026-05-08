@@ -44,7 +44,7 @@ jobs:
       run: cargo clippy --all-targets --all-features -- -D warnings
 
     - name: Check for typos
-      uses: crate-ci/typos-action@v1
+      uses: crate-ci/typos@v1
 
     - name: Run cargo-deny
       uses: EmbarkStudios/cargo-deny-action@v2
