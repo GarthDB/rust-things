@@ -23,6 +23,7 @@ use tracing_subscriber::{
 };
 
 /// Error types for observability operations
+#[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum ObservabilityError {
     #[error("Failed to initialize tracing: {0}")]

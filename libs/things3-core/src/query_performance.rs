@@ -70,6 +70,7 @@ pub struct QueryOptimizationSuggestion {
 }
 
 /// Types of query optimizations
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum OptimizationType {
     /// Add database index
@@ -87,6 +88,7 @@ pub enum OptimizationType {
 }
 
 /// Priority levels for optimizations
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum OptimizationPriority {
     Low,
@@ -96,6 +98,7 @@ pub enum OptimizationPriority {
 }
 
 /// Implementation effort levels
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ImplementationEffort {
     Low,

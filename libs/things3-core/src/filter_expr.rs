@@ -25,6 +25,7 @@ use crate::models::{Task, TaskStatus, TaskType, ThingsId};
 /// `{"op": "pred", "args": {"kind": "status", ...}}`. Adjacent tagging is
 /// required because newtype variants over `Vec`/`Box` aren't compatible with
 /// serde's internal tagging.
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "op", content = "args", rename_all = "snake_case")]
 pub enum FilterExpr {
@@ -47,6 +48,7 @@ pub enum FilterExpr {
 /// `{"kind": "project", "value": "<uuid>"}`. Adjacent tagging keeps the wire
 /// format readable while supporting newtype variants over scalar types
 /// (`Uuid`, `String`, `NaiveDate`).
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "kind", content = "value", rename_all = "snake_case")]
 pub enum FilterPredicate {

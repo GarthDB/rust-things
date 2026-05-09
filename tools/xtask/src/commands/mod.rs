@@ -1,11 +1,11 @@
-pub mod analyze;
-pub mod generate;
-pub mod git_hooks;
-pub mod local_dev;
-pub mod things;
+pub(crate) mod analyze;
+pub(crate) mod generate;
+pub(crate) mod git_hooks;
+pub(crate) mod local_dev;
+pub(crate) mod things;
 
-pub use analyze::{analyze, perf_test};
-pub use generate::{generate_code, generate_tests};
-pub use git_hooks::setup_git_hooks;
-pub use local_dev::{local_dev_clean, local_dev_health, local_dev_setup};
-pub use things::{things_backup, things_db_location, things_validate};
+pub(crate) use analyze::{analyze, perf_test};
+pub(crate) use generate::{generate_code, generate_tests};
+pub(crate) use git_hooks::setup_git_hooks;
+pub(crate) use local_dev::{local_dev_clean, local_dev_health, local_dev_setup};
+pub(crate) use things::{things_backup, things_db_location, things_validate};

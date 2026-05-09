@@ -3,7 +3,7 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-pub fn setup_git_hooks() -> Result<()> {
+pub(crate) fn setup_git_hooks() -> Result<()> {
     println!("🔧 Setting up git hooks...");
 
     // Create .git/hooks directory if it doesn't exist

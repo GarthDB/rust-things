@@ -40,3 +40,23 @@ cargo test -p things3-core --lib                              # without feature
 cargo test -p things3-core --features advanced-queries --lib  # with feature
 cargo clippy -p things3-core --lib --features advanced-queries -- -D warnings
 ```
+
+## Public API surface lives in `lib.rs`
+
+Every `pub` item in a module must have an explicit `pub use` in the crate's `lib.rs`.
+No glob re-exports (`pub use foo::*`). If you add a new public type, add it to the
+`pub use` list in `lib.rs`; if it should be internal, use `pub(crate)` from the start.
+
+## Default to `pub(crate)`
+
+New items that don't need to be part of the crate's public API must use `pub(crate)`,
+not `pub`. This is enforced by `unreachable_pub = "warn"` in `[workspace.lints.rust]`.
+
+## `#[non_exhaustive]` policy
+
+All new public enums, error enums, and public structs with fields that may grow must
+carry `#[non_exhaustive]`. This is a free, backwards-compatible change that prevents
+downstream `match` exhaustiveness from breaking when new variants or fields are added.
+
+Grandfathered exceptions (do NOT add `#[non_exhaustive]`):
+- `TaskFilters` — frozen stable public struct since 1.0.0; extension via builder pattern only

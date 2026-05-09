@@ -203,6 +203,11 @@ impl ThingsMcpServer {
                     "message": "Similar tags found. Use force=true to create anyway."
                 })
             }
+            other => {
+                return Err(McpError::internal_error(format!(
+                    "unhandled TagCreationResult variant: {other:?}"
+                )))
+            }
         };
 
         Ok(CallToolResult {
@@ -381,6 +386,11 @@ impl ThingsMcpServer {
                     "similar_tags": similar_tags,
                     "message": "Similar tags found. Please confirm or use a different tag."
                 })
+            }
+            other => {
+                return Err(McpError::internal_error(format!(
+                    "unhandled TagAssignmentResult variant: {other:?}"
+                )))
             }
         };
 
