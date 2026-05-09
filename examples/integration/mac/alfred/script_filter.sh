@@ -20,23 +20,24 @@ export RUST_LOG=off  # suppress things3 log output
 THINGS3=$(command -v things3 || echo "${HOME}/.cargo/bin/things3")
 QUERY="${1:-}"
 
-# Helper: emit an Alfred JSON items array
-emit() { echo "$1"; }
-
 if [ ! -x "$THINGS3" ]; then
-    emit '{"items":[{"title":"things3 not found","subtitle":"Install with: brew install garthdb/tap/things3","valid":false}]}'
+    echo '{"items":[{"title":"things3 not found","subtitle":"Install with: brew install garthdb/tap/things3","valid":false}]}'
     exit 0
 fi
 
 if [ -z "$QUERY" ]; then
-    emit '{"items":[{"title":"Search Things 3","subtitle":"Type to search your tasks","valid":false}]}'
+    echo '{"items":[{"title":"Search Things 3","subtitle":"Type to search your tasks","valid":false}]}'
     exit 0
 fi
 
 RESULTS=$("$THINGS3" search "$QUERY")
 
 if [ -z "$RESULTS" ] || [ "$RESULTS" = "[]" ]; then
-    emit "{\"items\":[{\"title\":\"No results for: $QUERY\",\"valid\":false}]}"
+    echo "$QUERY" | python3 -c "
+import json, sys
+q = sys.stdin.read().strip()
+print(json.dumps({'items': [{'title': f'No results for: {q}', 'valid': False}]}))
+"
     exit 0
 fi
 
@@ -48,11 +49,10 @@ tasks = json.load(sys.stdin)
 items = []
 for t in tasks:
     icon = '✅ ' if t['status'] == 'completed' else ''
-    subtitle = t.get('notes', '') or t.get('status', '')
     items.append({
         'uid': t['uuid'],
         'title': icon + t['title'],
-        'subtitle': subtitle[:80] if subtitle else t['status'],
+        'subtitle': (t.get('notes') or t['status'])[:80],
         'arg': t['uuid'],
         'autocomplete': t['title'],
     })

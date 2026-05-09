@@ -268,7 +268,11 @@ fi
 RESULTS=$("$THINGS3" search "$QUERY")
 
 if [ -z "$RESULTS" ] || [ "$RESULTS" = "[]" ]; then
-    echo "{\"items\":[{\"title\":\"No results for: $QUERY\",\"valid\":false}]}"
+    echo "$QUERY" | python3 -c "
+import json, sys
+q = sys.stdin.read().strip()
+print(json.dumps({'items': [{'title': f'No results for: {q}', 'valid': False}]}))
+"
     exit 0
 fi
 
@@ -426,5 +430,4 @@ Use `python3 -c "import json,sys; ..."` to parse it in shell scripts without add
 
 **Related documentation**:
 - [MCP Integration](./mcp-integration.md) — AI/LLM editor integrations (Cursor, VS Code, Zed)
-- [Custom Scripts](./custom-scripts.md) — Building custom shell automation
 - [Things URL scheme](https://culturedcode.com/things/support/articles/2803573/) — Official Cultured Code docs

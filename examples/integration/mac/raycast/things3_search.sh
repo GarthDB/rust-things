@@ -10,9 +10,6 @@
 # @raycast.packageName Things 3
 # @raycast.description Search your Things 3 tasks and display results
 # @raycast.argument1 { "type": "text", "placeholder": "Search query" }
-# @raycast.author YourName
-# @raycast.authorURL https://github.com/YourName
-
 # Setup:
 #   1. Install Raycast (raycast.com)
 #   2. Copy this file to ~/Documents/Raycast Scripts/ (or any Scripts dir)

@@ -10,7 +10,6 @@
 # The shortcut reads clipboard text and creates a Things 3 task from it.
 
 set -euo pipefail
-export RUST_LOG=off  # suppress things3 log output
 
 # Read task title from stdin (Shortcuts passes "Shortcut Input" here)
 TITLE=$(cat)
