@@ -353,6 +353,7 @@ mod things_id_tests {
 }
 
 /// Task status enumeration
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TaskStatus {
     #[serde(rename = "incomplete")]
@@ -368,6 +369,7 @@ pub enum TaskStatus {
 }
 
 /// Task type enumeration
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TaskType {
     #[serde(rename = "to-do")]
@@ -381,6 +383,7 @@ pub enum TaskType {
 }
 
 /// How to handle child tasks when deleting a parent
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DeleteChildHandling {
     /// Return error if task has children (default)
@@ -517,6 +520,7 @@ pub struct UpdateTagRequest {
 }
 
 /// Tag match type classification
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TagMatchType {
     /// Exact match (case-insensitive)
@@ -545,6 +549,7 @@ pub struct TagMatch {
 }
 
 /// Result of tag creation with duplicate checking
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TagCreationResult {
     /// New tag was created
@@ -574,6 +579,7 @@ pub enum TagCreationResult {
 }
 
 /// Result of tag assignment to task
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TagAssignmentResult {
     /// Tag assigned successfully
@@ -767,6 +773,7 @@ pub struct UpdateAreaRequest {
 }
 
 /// How to handle child tasks when completing/deleting a project
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ProjectChildHandling {
     /// Return error if project has child tasks (default, safest)

@@ -6,6 +6,7 @@ use thiserror::Error;
 pub type Result<T> = std::result::Result<T, ThingsError>;
 
 /// Main error type for Things operations
+#[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum ThingsError {
     #[error("Database error: {0}")]

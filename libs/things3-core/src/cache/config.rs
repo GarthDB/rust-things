@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 /// Cache invalidation strategy
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InvalidationStrategy {
     /// Time-based invalidation (TTL)

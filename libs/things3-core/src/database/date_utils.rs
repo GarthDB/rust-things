@@ -20,6 +20,7 @@ const MIN_REASONABLE_TIMESTAMP: i64 = -31536000; // ~1 year before epoch
 const MAX_REASONABLE_TIMESTAMP: i64 = 3_124_224_000; // ~99 years after epoch
 
 /// Errors that can occur during date conversion
+#[non_exhaustive]
 #[derive(Debug, Error, Clone, PartialEq)]
 pub enum DateConversionError {
     /// Date is before the Things 3 epoch (2001-01-01)
@@ -44,6 +45,7 @@ pub enum DateConversionError {
 }
 
 /// Errors that can occur during date validation
+#[non_exhaustive]
 #[derive(Debug, Error, Clone, PartialEq)]
 pub enum DateValidationError {
     /// Deadline cannot be before start date

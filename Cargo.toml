@@ -111,6 +111,7 @@ text-file = "coverage.txt"
 # Phase 1: safety-net lints only. Pedantic/nursery deferred to Phase 2 once baseline is audited.
 [workspace.lints.rust]
 unsafe_code = "deny"
+unreachable_pub = "warn"
 
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }

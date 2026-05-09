@@ -203,6 +203,7 @@ impl ThingsMcpServer {
                     "message": "Similar tags found. Use force=true to create anyway."
                 })
             }
+            _ => unreachable!("unknown TagCreationResult variant"),
         };
 
         Ok(CallToolResult {
@@ -382,6 +383,7 @@ impl ThingsMcpServer {
                     "message": "Similar tags found. Please confirm or use a different tag."
                 })
             }
+            _ => unreachable!("unknown TagAssignmentResult variant"),
         };
 
         Ok(CallToolResult {

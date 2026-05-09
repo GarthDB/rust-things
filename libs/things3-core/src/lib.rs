@@ -126,12 +126,19 @@ pub use export::{DataExporter, ExportConfig, ExportData, ExportFormat};
 
 pub use mcp_cache_middleware::{MCPCacheConfig, MCPCacheEntry, MCPCacheMiddleware, MCPCacheStats};
 pub use mcp_config::McpServerConfig;
-pub use models::*;
+#[cfg(feature = "advanced-queries")]
+pub use models::RankedTask;
+pub use models::{
+    Area, BulkCompleteRequest, BulkCreateTasksRequest, BulkDeleteRequest, BulkMoveRequest,
+    BulkOperationResult, BulkUpdateDatesRequest, CreateAreaRequest, CreateProjectRequest,
+    CreateTagRequest, CreateTaskRequest, DeleteChildHandling, Project, ProjectChildHandling, Tag,
+    TagAssignmentResult, TagCompletion, TagCreationResult, TagMatch, TagMatchType, TagPair,
+    TagStatistics, Task, TaskFilters, TaskStatus, TaskType, ThingsId, UpdateAreaRequest,
+    UpdateProjectRequest, UpdateTagRequest, UpdateTaskRequest,
+};
 #[cfg(target_os = "macos")]
 pub use mutations::AppleScriptBackend;
 pub use mutations::{MutationBackend, SqlxBackend};
-// Explicitly re-export DeleteChildHandling for clarity
-pub use models::DeleteChildHandling;
 
 #[cfg(feature = "observability")]
 pub use observability::{

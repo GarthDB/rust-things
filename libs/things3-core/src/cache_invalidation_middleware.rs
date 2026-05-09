@@ -26,6 +26,7 @@ pub struct InvalidationEvent {
 }
 
 /// Types of invalidation events
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum InvalidationEventType {
     /// Entity was created
@@ -77,6 +78,7 @@ pub struct InvalidationRule {
 }
 
 /// Invalidation strategies
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum InvalidationStrategy {
     /// Invalidate all caches
@@ -594,6 +596,7 @@ impl CacheInvalidationHandler for ThingsCacheInvalidationHandler {
 }
 
 /// Cascade invalidation event type
+#[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CascadeInvalidationEvent {
     /// Invalidate all dependent entities
