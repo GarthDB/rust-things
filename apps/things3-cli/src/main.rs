@@ -1,4 +1,5 @@
 //! Things CLI - Command line interface for Things 3 with integrated MCP server
+#![allow(deprecated)]
 
 use clap::Parser;
 use std::sync::Arc;

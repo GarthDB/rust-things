@@ -1,4 +1,5 @@
 //! Test harness for MCP server testing
+#![allow(deprecated)]
 
 use crate::mcp::{
     CallToolRequest, CallToolResult, Content, GetPromptRequest, GetPromptResult, McpError,

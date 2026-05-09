@@ -1,4 +1,5 @@
 //! MCP (Model Context Protocol) server implementation for Things 3 integration
+#![allow(deprecated)]
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

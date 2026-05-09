@@ -4,11 +4,24 @@ use crate::error::{Result, ThingsError};
 use std::path::{Path, PathBuf};
 
 /// Configuration for Things 3 database access
+///
+/// **Deprecation notice**: Direct field access and the `new()` constructor are deprecated as of
+/// 2.1.0 and will be removed in 3.0. A `ThingsConfig::builder()` API is planned. Use
+/// `ThingsConfig::from_env()` or `ThingsConfig::with_default_path()` as alternatives in the
+/// meantime.
 #[derive(Debug, Clone)]
 pub struct ThingsConfig {
     /// Path to the Things 3 database
+    #[deprecated(
+        since = "2.1.0",
+        note = "Direct field access will be removed in 3.0. Use ThingsConfig::from_env() or ThingsConfig::with_default_path() for now."
+    )]
     pub database_path: PathBuf,
     /// Whether to use the default database path if the specified path doesn't exist
+    #[deprecated(
+        since = "2.1.0",
+        note = "Direct field access will be removed in 3.0. Use ThingsConfig::from_env() or ThingsConfig::with_default_path() for now."
+    )]
     pub fallback_to_default: bool,
 }
 
@@ -18,7 +31,12 @@ impl ThingsConfig {
     /// # Arguments
     /// * `database_path` - Path to the Things 3 database
     /// * `fallback_to_default` - Whether to fall back to the default path if the specified path doesn't exist
+    #[deprecated(
+        since = "2.1.0",
+        note = "Will be removed in 3.0. A ThingsConfig::builder() API is planned. Use ThingsConfig::from_env() or ThingsConfig::with_default_path() for now."
+    )]
     #[must_use]
+    #[allow(deprecated)]
     pub fn new<P: AsRef<Path>>(database_path: P, fallback_to_default: bool) -> Self {
         Self {
             database_path: database_path.as_ref().to_path_buf(),
@@ -28,6 +46,7 @@ impl ThingsConfig {
 
     /// Create a configuration with the default database path
     #[must_use]
+    #[allow(deprecated)]
     pub fn with_default_path() -> Self {
         Self {
             database_path: Self::get_default_database_path(),
@@ -39,6 +58,7 @@ impl ThingsConfig {
     ///
     /// # Errors
     /// Returns `ThingsError::Message` if neither the specified path nor the default path exists
+    #[allow(deprecated)]
     pub fn get_effective_database_path(&self) -> Result<PathBuf> {
         // Check if the specified path exists
         if self.database_path.exists() {
@@ -78,6 +98,7 @@ impl ThingsConfig {
     /// Reads the database path from `THINGS_DB_PATH` (preferred) or the legacy
     /// `THINGS_DATABASE_PATH`, and the fallback flag from `THINGS_FALLBACK_TO_DEFAULT`.
     #[must_use]
+    #[allow(deprecated)]
     pub fn from_env() -> Self {
         let database_path = match std::env::var("THINGS_DB_PATH") {
             Ok(v) => PathBuf::from(v),
@@ -109,6 +130,7 @@ impl ThingsConfig {
     ///
     /// # Errors
     /// Returns `ThingsError::Io` if the temporary file cannot be created
+    #[allow(deprecated)]
     pub fn for_testing() -> Result<Self> {
         use tempfile::NamedTempFile;
         let temp_file = NamedTempFile::new()?;
@@ -124,6 +146,7 @@ impl Default for ThingsConfig {
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use serial_test::serial;
