@@ -22,6 +22,7 @@ allow = [
     "CC0-1.0",
     "MPL-2.0",
     "OpenSSL",
+    "CDLA-Permissive-2.0",
 ]
 
 # ring uses a mix of ISC, MIT, and OpenSSL-licensed code
