@@ -416,7 +416,7 @@ impl CacheInvalidationMiddleware {
     /// - `"project_uuid"` — UUID string of the project the entity belongs to.
     /// - `"area_uuid"` — UUID string of the area the entity belongs to.
     ///
-    /// Missing or unparseable metadata falls back to `entity_id: None`
+    /// Missing or unparsable metadata falls back to `entity_id: None`
     /// (back-compatible with pre-#93 callers).
     fn find_dependent_entities(event: &InvalidationEvent) -> Vec<DependentEntity> {
         let mut dependent_entities = Vec::new();

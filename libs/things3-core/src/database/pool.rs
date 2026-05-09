@@ -1,9 +1,12 @@
 //! Connection pool configuration, optimizations, and health/metrics types.
 
 use crate::database::stats::DatabaseStats;
+use crate::error::{Result as ThingsResult, ThingsError};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
 use std::time::Duration;
+use tracing::debug;
 
 /// Database connection pool configuration for optimal performance
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,6 +115,72 @@ pub struct ComprehensiveHealthStatus {
     pub pool_metrics: PoolMetrics,
     pub database_stats: DatabaseStats,
     pub timestamp: DateTime<Utc>,
+}
+
+/// Apply SQLite-specific optimizations to an open pool.
+pub(crate) async fn apply_sqlite_optimizations(
+    pool: &SqlitePool,
+    optimizations: &SqliteOptimizations,
+) -> ThingsResult<()> {
+    sqlx::query(&format!(
+        "PRAGMA journal_mode = {}",
+        optimizations.journal_mode
+    ))
+    .execute(pool)
+    .await
+    .map_err(|e| ThingsError::unknown(format!("Failed to set journal mode: {e}")))?;
+
+    sqlx::query(&format!(
+        "PRAGMA synchronous = {}",
+        optimizations.synchronous_mode
+    ))
+    .execute(pool)
+    .await
+    .map_err(|e| ThingsError::unknown(format!("Failed to set synchronous mode: {e}")))?;
+
+    sqlx::query(&format!("PRAGMA cache_size = {}", optimizations.cache_size))
+        .execute(pool)
+        .await
+        .map_err(|e| ThingsError::unknown(format!("Failed to set cache size: {e}")))?;
+
+    let fk_setting = if optimizations.enable_foreign_keys {
+        "ON"
+    } else {
+        "OFF"
+    };
+    sqlx::query(&format!("PRAGMA foreign_keys = {fk_setting}"))
+        .execute(pool)
+        .await
+        .map_err(|e| ThingsError::unknown(format!("Failed to set foreign keys: {e}")))?;
+
+    sqlx::query(&format!("PRAGMA temp_store = {}", optimizations.temp_store))
+        .execute(pool)
+        .await
+        .map_err(|e| ThingsError::unknown(format!("Failed to set temp store: {e}")))?;
+
+    sqlx::query(&format!("PRAGMA mmap_size = {}", optimizations.mmap_size))
+        .execute(pool)
+        .await
+        .map_err(|e| ThingsError::unknown(format!("Failed to set mmap size: {e}")))?;
+
+    if optimizations.enable_query_planner {
+        sqlx::query("PRAGMA optimize")
+            .execute(pool)
+            .await
+            .map_err(|e| ThingsError::unknown(format!("Failed to optimize database: {e}")))?;
+    }
+
+    debug!(
+        "Applied SQLite optimizations: WAL={}, sync={}, cache={}KB, fk={}, temp={}, mmap={}MB",
+        optimizations.enable_wal_mode,
+        optimizations.synchronous_mode,
+        optimizations.cache_size.abs() / 1024,
+        optimizations.enable_foreign_keys,
+        optimizations.temp_store,
+        optimizations.mmap_size / 1024 / 1024
+    );
+
+    Ok(())
 }
 
 #[cfg(test)]
