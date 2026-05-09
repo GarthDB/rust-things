@@ -16,7 +16,7 @@ A high-performance Rust library and CLI for Things 3 integration with integrated
 - 🚀 **High Performance**: Built with Rust for maximum speed and reliability
 - 🔧 **CLI Tool**: Command-line interface for managing Things 3 data
 - 🤖 **MCP Integration**: Integrated MCP server for AI/LLM integration
-- 📊 **Comprehensive API**: Full access to Things 3 database with async SQLx
+- 📊 **Safe Integration**: Reads via async SQLx, mutations via AppleScript (per [CulturedCode guidelines](https://culturedcode.com/things/support/articles/5510170/))
 - 🏗️ **Moon Workspace**: Organized monorepo with Moon build system
 - 🧪 **Well Tested**: Comprehensive test suite and benchmarks
 - 📈 **Performance Monitoring**: Built-in metrics and system monitoring
@@ -232,7 +232,7 @@ The dashboard provides:
 
 ## 🤖 MCP Integration
 
-The MCP (Model Context Protocol) server provides 46 tools for AI/LLM integration:
+The MCP (Model Context Protocol) server provides 46 tools for AI/LLM integration. Common tools:
 
 ### Available MCP Tools
 
@@ -245,16 +245,22 @@ The MCP (Model Context Protocol) server provides 46 tools for AI/LLM integration
 | `search_tasks` | Search for tasks by title or notes |
 | `create_task` | Create a new task |
 | `update_task` | Update an existing task |
+| `complete_task` | Mark a task as completed |
+| `delete_task` | Soft delete a task |
 | `get_productivity_metrics` | Get productivity metrics |
 | `export_data` | Export data in various formats |
 | `bulk_create_tasks` | Create multiple tasks at once |
+| `bulk_complete` | Complete multiple tasks at once |
+| `bulk_move` | Move multiple tasks to a project or area |
 | `get_recent_tasks` | Get recently modified tasks |
 | `backup_database` | Create a database backup |
-| `restore_database` | Restore from a backup |
+| `restore_database` | Restore from a backup (**requires `--unsafe-direct-db`**) |
 | `list_backups` | List available backups |
 | `get_performance_stats` | Get performance statistics |
 | `get_system_metrics` | Get system resource metrics |
 | `get_cache_stats` | Get cache performance stats |
+
+See [`skills/things3/references/TOOLS.md`](skills/things3/references/TOOLS.md) for the full 46-tool catalog.
 
 ### Configuration
 
@@ -729,10 +735,11 @@ export THINGS_DB_PATH="/path/to/main.sqlite"
 
 ### Permission Issues
 
-Ensure Things 3 is closed when running the CLI:
-```bash
-killall Things3
-```
+**Things 3 must be running** when using mutation operations (create, update, complete, delete). The default `AppleScriptBackend` drives Things 3 via `osascript` — it requires the app to be open.
+
+On first run, macOS will prompt: *"rust-things3 wants to control Things3."* Grant access via System Settings → Privacy & Security → Automation.
+
+For read-only operations (inbox, today, search, etc.) Things 3 does not need to be running.
 
 ### Stale Binary After Upgrade
 

@@ -115,19 +115,18 @@ let areas = db.get_areas().await?;
 ### Bulk Operations
 
 ```rust
-use things3_core::{BulkCompleteRequest, BulkMoveRequest};
-use uuid::Uuid;
+use things3_core::{BulkCompleteRequest, BulkMoveRequest, ThingsId};
 
 // Complete multiple tasks
 let complete = BulkCompleteRequest {
-    task_uuids: vec![uuid1, uuid2, uuid3],
+    task_uuids: vec![id1, id2, id3],
 };
 let result = db.bulk_complete(complete).await?;
 
 // Move tasks to a project
 let move_req = BulkMoveRequest {
-    task_uuids: vec![uuid1, uuid2],
-    project_uuid: Some(project_uuid),
+    task_uuids: vec![id1, id2],
+    project_uuid: Some(project_id),
     area_uuid: None,
 };
 let result = db.bulk_move(move_req).await?;

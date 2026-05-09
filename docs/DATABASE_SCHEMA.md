@@ -10,7 +10,9 @@
 
 ## Overview
 
-Things 3 uses SQLite as its database engine. The database is read-only for external tools to prevent corruption. This document describes the schema structure and how `rust-things3` interacts with it.
+Things 3 uses SQLite as its database engine. This document describes the schema structure and how `rust-things3` interacts with it.
+
+**Access model**: `rust-things3` opens the SQLite file in **read-only mode** for all queries. Mutations (create, update, complete, delete) go through `AppleScriptBackend` — driving Things 3 via `osascript` — rather than writing to the database file directly. Direct SQLite writes are available only via `--unsafe-direct-db` and are deprecated. See [CulturedCode's safety article](https://culturedcode.com/things/support/articles/5510170/).
 
 ### Database Files
 
@@ -301,6 +303,8 @@ SQLite uses INTEGER for booleans:
 **experimental**: Experimental features data
 
 ## Write Operations
+
+> **Note**: `rust-things3` does not execute these SQL patterns directly by default. These SQL patterns document the internal format that `AppleScriptBackend` produces indirectly via Things 3. The `--unsafe-direct-db` flag enables direct SQLite writes (deprecated).
 
 ### Task Creation
 
