@@ -115,8 +115,7 @@ let areas = db.get_areas().await?;
 ### Bulk Operations
 
 ```rust
-use things3_core::{BulkCompleteRequest, BulkMoveRequest};
-use uuid::Uuid;
+use things3_core::{BulkCompleteRequest, BulkMoveRequest, ThingsId};
 
 // Complete multiple tasks
 let complete = BulkCompleteRequest {

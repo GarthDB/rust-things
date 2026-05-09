@@ -167,46 +167,30 @@ sequenceDiagram
 
 ### Database Write Flow (Create/Update Operations)
 
+Mutations use `AppleScriptBackend` by default on macOS — Things 3 must be running. Direct SQLite writes are available only with `--unsafe-direct-db` (deprecated).
+
 ```mermaid
 sequenceDiagram
     participant MCP as MCP Client
     participant Handler as Tool Handler
-    participant DB as ThingsDatabase
-    participant Validator as Validation Layer
-    participant SQLx as SQLx Pool
-    participant SQLite
+    participant Backend as MutationBackend
+    participant AS as AppleScriptBackend
+    participant osascript
+    participant Things3 as Things 3 App
     
     MCP->>Handler: create_task(request)
-    Handler->>DB: create_task(CreateTaskRequest)
-    DB->>DB: Generate UUID v4
-    
-    alt Project UUID provided
-        DB->>Validator: validate_project_exists()
-        Validator->>SQLx: SELECT 1 FROM TMTask WHERE uuid=? AND type=1
-        SQLx->>SQLite: Query
-        SQLite-->>SQLx: Result
-        SQLx-->>Validator: Exists/Not Found
-        Validator-->>DB: Validation result
-    end
-    
-    alt Area UUID provided
-        DB->>Validator: validate_area_exists()
-        Validator->>SQLx: SELECT 1 FROM TMArea WHERE uuid=?
-        SQLx->>SQLite: Query
-        SQLite-->>SQLx: Result
-        SQLx-->>Validator: Exists/Not Found
-        Validator-->>DB: Validation result
-    end
-    
-    DB->>DB: Convert dates to Things 3 format
-    DB->>DB: Serialize tags to BLOB
-    DB->>SQLx: INSERT INTO TMTask
-    SQLx->>SQLite: Execute INSERT
-    SQLite-->>SQLx: Success
-    SQLx-->>DB: Rows affected
-    DB-->>Handler: Created UUID
+    Handler->>Backend: create_task(CreateTaskRequest)
+    Backend->>AS: build_script(request)
+    AS->>osascript: execute AppleScript
+    osascript->>Things3: tell application "Things3"
+    Things3-->>osascript: created ThingsId
+    osascript-->>AS: output string
+    AS-->>Backend: ThingsId
+    Backend-->>Handler: ThingsId
     Handler-->>MCP: Success response
 ```
+
+> **`--unsafe-direct-db` path** (deprecated): bypasses AppleScript and writes directly to the SQLite file via SQLx. Risks data loss — see [CulturedCode's safety article](https://culturedcode.com/things/support/articles/5510170/).
 
 ### Task Lifecycle Flow (Complete/Delete Operations)
 
@@ -220,57 +204,27 @@ sequenceDiagram
     participant SQLx as SQLx Pool
     participant SQLite
     
-    Note over AI,SQLite: Task Completion Flow
+    Note over AI,Things3: Task Completion Flow (AppleScriptBackend default)
     AI->>MCP: complete_task(uuid)
     MCP->>Handler: handle_complete_task()
-    Handler->>DB: complete_task(uuid)
-    DB->>Validator: validate_task_exists()
-    Validator->>SQLite: SELECT 1 FROM TMTask WHERE uuid=?
-    SQLite-->>Validator: Task exists
-    Validator-->>DB: Validation OK
-    DB->>DB: Get current timestamp
-    DB->>SQLx: UPDATE TMTask SET status=1, stopDate=?, userModificationDate=?
-    SQLx->>SQLite: Execute UPDATE
-    SQLite-->>SQLx: Success
-    SQLx-->>DB: Rows affected
-    DB-->>Handler: Success
+    Handler->>AS: complete_task(id)
+    AS->>osascript: set status of to do id ? to completed
+    osascript->>Things3: AppleScript command
+    Things3-->>osascript: OK
+    osascript-->>AS: success
+    AS-->>Handler: Success
     Handler-->>MCP: Success response
     MCP-->>AI: Task completed
     
-    Note over AI,SQLite: Task Deletion Flow (with Children)
+    Note over AI,Things3: Task Deletion Flow
     AI->>MCP: delete_task(uuid, child_handling)
     MCP->>Handler: handle_delete_task()
-    Handler->>DB: delete_task(uuid, DeleteChildHandling)
-    DB->>Validator: validate_task_exists()
-    Validator-->>DB: Task exists
-    DB->>SQLx: SELECT uuid FROM TMTask WHERE heading=?
-    SQLx->>SQLite: Query children
-    SQLite-->>SQLx: Child rows
-    SQLx-->>DB: Children found
-    
-    alt child_handling = Error
-        DB-->>Handler: Error: Task has children
-        Handler-->>MCP: Error response
-    else child_handling = Cascade
-        loop For each child
-            DB->>SQLx: UPDATE TMTask SET trashed=1 WHERE uuid=?
-            SQLx->>SQLite: Mark child as trashed
-        end
-        DB->>SQLx: UPDATE TMTask SET trashed=1 WHERE uuid=?
-        SQLx->>SQLite: Mark parent as trashed
-        SQLite-->>DB: Success
-        DB-->>Handler: Success
-    else child_handling = Orphan
-        loop For each child
-            DB->>SQLx: UPDATE TMTask SET heading=NULL WHERE uuid=?
-            SQLx->>SQLite: Clear parent reference
-        end
-        DB->>SQLx: UPDATE TMTask SET trashed=1 WHERE uuid=?
-        SQLx->>SQLite: Mark parent as trashed
-        SQLite-->>DB: Success
-        DB-->>Handler: Success
-    end
-    
+    Handler->>AS: delete_task(id, DeleteChildHandling)
+    AS->>osascript: delete to do id ?
+    osascript->>Things3: AppleScript command
+    Things3-->>osascript: OK
+    osascript-->>AS: success
+    AS-->>Handler: Success
     Handler-->>MCP: Success/Error response
     MCP-->>AI: Task deleted or error
 ```
@@ -343,7 +297,7 @@ stateDiagram-v2
 - JSON-RPC protocol handling
 - Middleware system (logging, validation, auth, rate limiting)
 - I/O abstraction (stdin/stdout, testable)
-- Tool implementations (17 MCP tools)
+- Tool implementations (46 MCP tools)
 
 **Key Types**:
 - `Cli`: CLI argument parser
@@ -544,8 +498,8 @@ pub type Result<T> = std::result::Result<T, ThingsError>;
 ## Performance Considerations
 
 ### Database Access
-- **Connection Pooling**: SQLx pool (min: 1, max: 10)
-- **Read-Only**: Things 3 DB is never modified
+- **Connection Pooling**: SQLx pool (min: 1, max: 10), read-only mode
+- **Mutation Backend**: `AppleScriptBackend` (default, macOS) drives Things 3 via `osascript`; `SqlxBackend` available via `--unsafe-direct-db`
 - **Prepared Statements**: Cached for reuse
 - **Async Queries**: Non-blocking I/O
 
@@ -564,7 +518,8 @@ pub type Result<T> = std::result::Result<T, ThingsError>;
 ## Security Considerations
 
 ### Database Access
-- **Read-Only**: No write operations
+- **SQLx Read-Only**: SQLite connection opened in read-only mode; no direct writes
+- **AppleScript Mutations**: All writes go through `osascript` → Things 3 app by default
 - **Path Validation**: Prevent directory traversal
 - **Permission Checks**: Verify file access
 

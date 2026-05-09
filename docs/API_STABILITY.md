@@ -49,7 +49,7 @@ impl ThingsDatabase {
     pub async fn get_logbook(&self, limit: Option<usize>) -> Result<Vec<Task>>;
     pub async fn get_trash(&self, limit: Option<usize>) -> Result<Vec<Task>>;
     
-    pub async fn get_projects(&self, area_uuid: Option<Uuid>, limit: Option<usize>) -> Result<Vec<Project>>;
+    pub async fn get_projects(&self, area_uuid: Option<ThingsId>, limit: Option<usize>) -> Result<Vec<Project>>;
     pub async fn get_areas(&self, limit: Option<usize>) -> Result<Vec<Area>>;
     pub async fn get_tags(&self) -> Result<Vec<Tag>>;
     
@@ -60,14 +60,14 @@ impl ThingsDatabase {
     pub async fn search_tags(&self, query: &str) -> Result<Vec<Tag>>;
     
     // Lookup methods
-    pub async fn get_task_by_uuid(&self, uuid: Uuid) -> Result<Option<Task>>;
-    pub async fn get_project_by_uuid(&self, uuid: Uuid) -> Result<Option<Project>>;
-    pub async fn get_area_by_uuid(&self, uuid: Uuid) -> Result<Option<Area>>;
+    pub async fn get_task_by_uuid(&self, id: &ThingsId) -> Result<Option<Task>>;
+    pub async fn get_project_by_uuid(&self, id: &ThingsId) -> Result<Option<Project>>;
+    pub async fn get_area_by_uuid(&self, id: &ThingsId) -> Result<Option<Area>>;
     pub async fn get_tag_by_title(&self, title: &str) -> Result<Option<Tag>>;
     
     // Relationship methods
-    pub async fn get_project_tasks(&self, project_uuid: Uuid) -> Result<Vec<Task>>;
-    pub async fn get_area_projects(&self, area_uuid: Uuid) -> Result<Vec<Project>>;
+    pub async fn get_project_tasks(&self, project_id: &ThingsId) -> Result<Vec<Task>>;
+    pub async fn get_area_projects(&self, area_id: &ThingsId) -> Result<Vec<Project>>;
     pub async fn get_tasks_by_tag(&self, tag_title: &str) -> Result<Vec<Task>>;
     
     // Statistics
@@ -85,7 +85,7 @@ impl ThingsDatabase {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
-    pub uuid: Uuid,
+    pub uuid: ThingsId,
     pub title: String,
     pub notes: Option<String>,
     pub status: TaskStatus,
@@ -96,15 +96,15 @@ pub struct Task {
     pub deadline: Option<NaiveDate>,
     pub stop_date: Option<NaiveDate>,
     pub completion_date: Option<NaiveDate>,
-    pub project_uuid: Option<Uuid>,
-    pub area_uuid: Option<Uuid>,
+    pub project_uuid: Option<ThingsId>,
+    pub area_uuid: Option<ThingsId>,
     pub tags: Vec<String>,
     pub checklist_items: Vec<ChecklistItem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {
-    pub uuid: Uuid,
+    pub uuid: ThingsId,
     pub title: String,
     pub notes: Option<String>,
     pub status: TaskStatus,
@@ -114,14 +114,14 @@ pub struct Project {
     pub deadline: Option<NaiveDate>,
     pub stop_date: Option<NaiveDate>,
     pub completion_date: Option<NaiveDate>,
-    pub area_uuid: Option<Uuid>,
+    pub area_uuid: Option<ThingsId>,
     pub tags: Vec<String>,
     pub tasks: Vec<Task>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Area {
-    pub uuid: Uuid,
+    pub uuid: ThingsId,
     pub title: String,
     pub visible: bool,
     pub projects: Vec<Project>,
@@ -130,10 +130,10 @@ pub struct Area {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tag {
-    pub uuid: Uuid,
+    pub uuid: ThingsId,
     pub title: String,
     pub shortcut: Option<String>,
-    pub parent_uuid: Option<Uuid>,
+    pub parent_uuid: Option<ThingsId>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -427,7 +427,7 @@ Potential changes being considered for 2.0:
 - More granular error types
 - Builder pattern for configuration
 - Trait-based database interface
-- Enhanced type safety with newtypes
+- ~~Enhanced type safety with newtypes~~ — **Done in 1.x**: `ThingsId` newtype replaces `Uuid` throughout
 
 See [POST_1.0_ROADMAP.md](POST_1.0_ROADMAP.md) for details.
 

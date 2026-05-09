@@ -251,29 +251,20 @@ pub struct SqliteThingsDatabase { /* ... */ }
 ---
 
 **4. Improved Type Safety**
-```rust
-// Current (1.x)
-pub fn get_task(&self, uuid: &str) -> Result<Option<Task>>;
 
-// Proposed (2.0)
-pub fn get_task(&self, id: TaskId) -> Result<Task>;
+~~Proposed for 2.0~~ — **Done in 1.x**: `ThingsId` newtype (a 21–22-char base62 string matching Things 3's native ID format) replaced `Uuid` throughout the public API in v1.x. Separate `ProjectId`, `AreaId`, etc. newtypes could still be considered for 2.0.
 
-pub struct TaskId(Uuid);
-pub struct ProjectId(Uuid);
-```
-
-**Benefit**: Compile-time prevention of mixing IDs, clearer intent
+**Benefit**: Compile-time prevention of mixing IDs, correct round-trip with Things 3 IDs
 
 ---
 
 #### New Features (2.0)
 
-- [ ] **Write Support** (Experimental, opt-in)
-  - Create tasks (with safety guarantees)
-  - Update task properties
-  - Complete tasks
-  - Move tasks between projects/areas
-  - **Note**: Read-only remains default, write requires explicit opt-in
+- [x] **Write Support** — **Shipped in 1.x** via `AppleScriptBackend`
+  - Create, update, complete, delete tasks
+  - Full project/area/tag CRUD
+  - Bulk operations (complete, move, delete, update dates)
+  - AppleScript is the default; direct DB writes opt-in via `--unsafe-direct-db`
 
 - [ ] **Alternative Backends**
   - PostgreSQL support (for server deployments)

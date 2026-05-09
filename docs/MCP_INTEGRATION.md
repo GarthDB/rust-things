@@ -747,6 +747,8 @@ Create a database backup.
 #### `restore_database`
 Restore from a backup.
 
+> ⚠️ **Requires `--unsafe-direct-db`**: This tool writes directly to the Things 3 SQLite file and is gated behind the `--unsafe-direct-db` flag (or `THINGS_UNSAFE_DIRECT_DB=1`). Without the flag the tool returns an error. See [CulturedCode's safety article](https://culturedcode.com/things/support/articles/5510170/).
+
 **Parameters**:
 - `backup_path` (required): Path to backup file
 
