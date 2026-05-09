@@ -4,6 +4,22 @@ This directory contains comprehensive examples demonstrating how to integrate `r
 
 ## Examples Overview
 
+### Mac Automation Scripts (`mac/`)
+
+Shell scripts for integrating `things3` with macOS automation tools. Each script includes inline setup instructions.
+
+| Script | Tool | What it does |
+|--------|------|--------------|
+| `mac/shortcuts/add_task_from_clipboard.sh` | Apple Shortcuts | Creates a task from clipboard text via the Things URL scheme |
+| `mac/automator/morning_review.sh` | Automator | Fetches inbox and shows a system notification |
+| `mac/raycast/things3_search.sh` | Raycast | Script Command for searching tasks with a query argument |
+| `mac/alfred/script_filter.sh` | Alfred | Script Filter that outputs Alfred JSON for task search results |
+| `mac/hazel/file_to_task.sh` | Hazel | Creates a task from a file Hazel matched in a watched folder |
+
+See [`docs/examples/mac-automation.md`](../../docs/examples/mac-automation.md) for full setup instructions for each tool.
+
+---
+
 ### 1. MCP Client (`mcp_client.rs`)
 
 **What it does**: Demonstrates how to build a custom MCP (Model Context Protocol) client that communicates with the Things 3 MCP server.
