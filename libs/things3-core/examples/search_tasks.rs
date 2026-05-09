@@ -1,6 +1,7 @@
 //! Task search example
 //!
 //! Run with: cargo run --example search_tasks -- "meeting"
+#![allow(deprecated)]
 
 use std::env;
 use things3_core::{ThingsConfig, ThingsDatabase};

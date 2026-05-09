@@ -1,6 +1,7 @@
 //! Data export example
 //!
 //! Run with: cargo run --example export_data
+#![allow(deprecated)]
 
 use things3_core::{DataExporter, ExportData, ExportFormat, ThingsConfig, ThingsDatabase};
 

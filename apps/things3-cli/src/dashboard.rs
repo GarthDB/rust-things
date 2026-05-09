@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 async fn dashboard_home(State(_state): State<DashboardState>) -> Html<&'static str> {
     Html(include_str!("dashboard.html"))
 }

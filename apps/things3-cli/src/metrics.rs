@@ -2,6 +2,7 @@
 //!
 //! This module provides comprehensive metrics collection for the Things 3 CLI application,
 //! including performance monitoring, error tracking, and operational metrics.
+#![allow(deprecated)]
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};

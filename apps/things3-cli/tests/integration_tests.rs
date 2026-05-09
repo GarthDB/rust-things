@@ -1,4 +1,5 @@
 //! Integration tests for CLI functionality
+#![allow(deprecated)]
 
 use std::io::Cursor;
 use tempfile::NamedTempFile;

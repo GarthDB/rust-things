@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 async fn health_check(State(state): State<AppState>) -> Result<Json<HealthResponse>, StatusCode> {
     let health_status = state.observability.health_status();
 
