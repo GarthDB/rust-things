@@ -6,6 +6,7 @@ This section contains practical examples and integration guides for using Rust T
 
 - [Basic Usage](./basic-usage.md) - Getting started with the CLI and library
 - [MCP Integration](./mcp-integration.md) - Setting up MCP with different editors
+- [Mac Automation](./mac-automation.md) - Shortcuts, Automator, Raycast, Alfred, Hazel
 - [Performance Monitoring](./performance-monitoring.md) - Using performance features
 - [Data Export](./data-export.md) - Exporting data in different formats
 - [Backup and Restore](./backup-restore.md) - Managing backups
@@ -121,6 +122,14 @@ things-cli mcp # Then use restore_database tool
 ```
 
 ## Integration Patterns
+
+### With Mac Automation Tools
+- Use Shortcuts for quick task creation from clipboard or iOS
+- Use Automator for scheduled reviews and folder actions
+- Use Raycast Script Commands for instant search
+- Use Alfred Script Filters for keyboard-driven task lookup
+- Use Hazel to auto-create tasks from file events
+- See [Mac Automation](./mac-automation.md) for setup guides and scripts
 
 ### With AI/LLM Tools
 - Use MCP server for AI tool integration
