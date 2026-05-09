@@ -254,6 +254,12 @@ pub struct SqliteThingsDatabase { /* ... */ }
 
 ~~Proposed for 2.0~~ — **Done in 1.x**: `ThingsId` newtype (a 21–22-char base62 string matching Things 3's native ID format) replaced `Uuid` throughout the public API in v1.x. Separate `ProjectId`, `AreaId`, etc. newtypes could still be considered for 2.0.
 
+```rust
+// ThingsId is the ID type throughout the public API
+let id: ThingsId = task.uuid.clone();
+let task = db.get_task_by_uuid(&id).await?;
+```
+
 **Benefit**: Compile-time prevention of mixing IDs, correct round-trip with Things 3 IDs
 
 ---

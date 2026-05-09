@@ -304,7 +304,7 @@ SQLite uses INTEGER for booleans:
 
 ## Write Operations
 
-> **Note**: `rust-things3` does not execute these SQL patterns directly by default. They document the internal format that `AppleScriptBackend` produces indirectly via Things 3. The `--unsafe-direct-db` flag enables direct SQLite writes (deprecated).
+> **Note**: `rust-things3` does not execute these SQL patterns directly by default. These SQL patterns document the internal format that `AppleScriptBackend` produces indirectly via Things 3. The `--unsafe-direct-db` flag enables direct SQLite writes (deprecated).
 
 ### Task Creation
 

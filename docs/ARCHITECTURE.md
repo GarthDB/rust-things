@@ -199,10 +199,9 @@ sequenceDiagram
     participant AI as AI Agent
     participant MCP as MCP Server
     participant Handler as Tool Handler
-    participant DB as ThingsDatabase
-    participant Validator as Validation Layer
-    participant SQLx as SQLx Pool
-    participant SQLite
+    participant AS as AppleScriptBackend
+    participant osascript
+    participant Things3 as Things 3 App
     
     Note over AI,Things3: Task Completion Flow (AppleScriptBackend default)
     AI->>MCP: complete_task(uuid)
