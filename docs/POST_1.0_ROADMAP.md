@@ -1,6 +1,6 @@
 # Post-1.0.0 Roadmap
 
-**Last Updated**: May 2026  
+**Last Updated**: 2026-05-08  
 **Status**: Active Development  
 **Target Audience**: Contributors, users, maintainers
 
@@ -111,29 +111,29 @@ We strictly follow [Semantic Versioning 2.0.0](https://semver.org/):
 
 ---
 
-### 1.5.0 (Q2 2026) - AppleScript-First Writes & API Hardening
+### 2.0.0 (2026-05-08) - AppleScript-First Writes & ThingsId
 
 **Theme**: Promote `AppleScriptBackend` to the default mutation path, adopt `ThingsId` throughout the public API, and harden the public API surface
 
-#### Planned Features
-- [ ] **`AppleScriptBackend` as default** — macOS mutations default to AppleScript; direct SQLite writes require `--unsafe-direct-db` opt-in; Linux/CI continues with `SqlxBackend`
-- [ ] **`ThingsId` type** — replaces `Uuid` throughout the public API; transparent newtype accepting both RFC-4122 UUIDs and Things-native 21–22-char base62 IDs
-- [ ] **Bulk create atomicity** — `bulk_create_tasks` is atomic with rollback on failure
-- [ ] **MCP connection resilience** — handler errors no longer drop the JSON-RPC connection
-- [ ] **Public API hardening** — explicit `pub use` re-exports in `lib.rs`, `#[non_exhaustive]` on all new public types, `pub → pub(crate)` audit
+#### Shipped Features
+- [x] **`AppleScriptBackend` as default** — macOS mutations default to AppleScript; direct SQLite writes require `--unsafe-direct-db` opt-in; Linux/CI continues with `SqlxBackend`
+- [x] **`ThingsId` type** — replaces `Uuid` throughout the public API; transparent newtype accepting both RFC-4122 UUIDs and Things-native 21–22-char base62 IDs
+- [x] **Bulk create atomicity** — `bulk_create_tasks` bounded via `MAX_BULK_BATCH_SIZE`; partial failures surface through `BulkOperationResult`
+- [x] **MCP connection resilience** — handler errors no longer drop the JSON-RPC connection; tool/resource/prompt errors flow as structured `isError: true` envelopes
+- [x] **Public API hardening** — explicit `pub use` re-exports in `lib.rs`, `#[non_exhaustive]` on all new public types, `pub → pub(crate)` audit
 
 #### Implementation Status
-- **Status**: In Progress (Unreleased)
+- **Status**: Released — 2026-05-08
 - **Breaking**: Yes (`ThingsId` replaces `Uuid` in public API)
 - **Feature Flag**: None (default behavior change)
 
 ---
 
-## 2.0.0 Roadmap (2027)
+## 3.0.0 Roadmap (Future)
 
 ### Vision
 
-Version 2.0 will be a major evolution, incorporating lessons learned from 1.x usage and community feedback. It will include breaking changes to improve ergonomics, performance, and type safety.
+Version 3.0 will be a major evolution, incorporating lessons learned from 2.x usage and community feedback. It will include breaking changes to improve ergonomics, performance, and type safety.
 
 ### Tentative Breaking Changes
 
@@ -141,10 +141,10 @@ Version 2.0 will be a major evolution, incorporating lessons learned from 1.x us
 
 **1. More Granular Error Types**
 ```rust
-// Current (1.x)
+// Current (2.x)
 pub type Result<T> = std::result::Result<T, ThingsError>;
 
-// Proposed (2.0)
+// Proposed (3.0)
 pub enum ThingsDatabaseError { /* ... */ }
 pub enum ThingsExportError { /* ... */ }
 pub enum ThingsQueryError { /* ... */ }
@@ -156,14 +156,14 @@ pub enum ThingsQueryError { /* ... */ }
 
 **2. Builder Pattern for Configuration**
 ```rust
-// Current (1.x)
+// Current (2.x)
 let config = ThingsConfig {
     database_path: Some(path),
     fallback_to_default: true,
     ..Default::default()
 };
 
-// Proposed (2.0)
+// Proposed (3.0)
 let config = ThingsConfig::builder()
     .database_path(path)
     .fallback_to_default(true)
@@ -177,10 +177,10 @@ let config = ThingsConfig::builder()
 
 **3. Async Traits**
 ```rust
-// Current (1.x) - Concrete type
+// Current (2.x) - Concrete type
 pub struct ThingsDatabase { /* ... */ }
 
-// Proposed (2.0) - Trait-based
+// Proposed (3.0) - Trait-based
 #[async_trait]
 pub trait ThingsDatabase {
     async fn get_task(&self, uuid: Uuid) -> Result<Option<Task>>;
@@ -196,7 +196,7 @@ pub struct SqliteThingsDatabase { /* ... */ }
 
 **4. Improved Type Safety**
 
-~~Proposed for 2.0~~ — **Done in 1.x**: `ThingsId` newtype (a 21–22-char base62 string matching Things 3's native ID format) replaced `Uuid` throughout the public API in v1.x. Separate `ProjectId`, `AreaId`, etc. newtypes could still be considered for 2.0.
+~~Proposed for 3.0~~ — **Done in 2.0**: `ThingsId` newtype (a 21–22-char base62 string matching Things 3's native ID format) replaced `Uuid` throughout the public API. Separate `ProjectId`, `AreaId`, etc. newtypes could still be considered for 3.0.
 
 ```rust
 // ThingsId is the ID type throughout the public API
@@ -208,9 +208,9 @@ let task = db.get_task_by_uuid(&id).await?;
 
 ---
 
-#### New Features (2.0)
+#### New Features (3.0)
 
-- [x] **Write Support** — **Shipped in 1.x** via `AppleScriptBackend`
+- [x] **Write Support** — **Shipped in 2.0** via `AppleScriptBackend`
   - Create, update, complete, delete tasks
   - Full project/area/tag CRUD
   - Bulk operations (complete, move, delete, update dates)
@@ -235,10 +235,10 @@ let task = db.get_task_by_uuid(&id).await?;
 
 #### Migration Path
 
-- **Timeline**: 6-month deprecation period in 1.x
+- **Timeline**: 6-month deprecation period in 2.x
 - **Tools**: Automated migration tool (`things3-migrate`)
-- **Documentation**: Comprehensive 2.0 migration guide
-- **Support**: 1.x LTS maintained for 12 months after 2.0 release
+- **Documentation**: Comprehensive 3.0 migration guide
+- **Support**: 2.x LTS maintained for 12 months after 3.0 release
 
 ---
 
@@ -369,11 +369,12 @@ We'll provide quarterly roadmap updates:
 - TaskPaper and iCalendar export formats
 - First-class AI agent skills catalog
 
-**In Progress** (1.5):
+**Released** (2.0, May 2026):
 - `AppleScriptBackend` as default on macOS; `ThingsId` type throughout public API
 - Public API hardening (`#[non_exhaustive]`, explicit re-exports)
+- MCP connection resilience; `SqlxBackend` deprecated behind `--unsafe-direct-db`
 
-**Mid-term** (2.0):
+**Mid-term** (3.0):
 - API evolution with breaking changes
 - Granular error types, async traits, builder-pattern configuration
 - Alternative backends (PostgreSQL, in-memory)
