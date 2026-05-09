@@ -1,0 +1,8 @@
+[default.extend-words]
+# Domain term: Things 3 uses "uncomplete" as a verb (inverse of "complete a task")
+uncomplete = "uncomplete"
+# Intentional test data for fuzzy/similarity matching tests
+importnt = "importnt"
+wrk = "wrk"
+# serde_json::ser is a valid Rust module path (serde serialization)
+ser = "ser"
