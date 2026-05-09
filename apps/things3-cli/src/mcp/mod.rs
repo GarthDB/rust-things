@@ -423,7 +423,7 @@ impl From<ThingsError> for McpError {
                 McpError::internal_error(format!("AppleScript automation failed: {message}"))
             }
             ThingsError::Unknown { message } => McpError::internal_error(message),
-            _ => McpError::internal_error("unknown error"),
+            e => McpError::internal_error(format!("unhandled Things error: {e:?}")),
         }
     }
 }

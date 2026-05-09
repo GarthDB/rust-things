@@ -203,7 +203,11 @@ impl ThingsMcpServer {
                     "message": "Similar tags found. Use force=true to create anyway."
                 })
             }
-            _ => unreachable!("unknown TagCreationResult variant"),
+            other => {
+                return Err(McpError::internal_error(format!(
+                    "unhandled TagCreationResult variant: {other:?}"
+                )))
+            }
         };
 
         Ok(CallToolResult {
@@ -383,7 +387,11 @@ impl ThingsMcpServer {
                     "message": "Similar tags found. Please confirm or use a different tag."
                 })
             }
-            _ => unreachable!("unknown TagAssignmentResult variant"),
+            other => {
+                return Err(McpError::internal_error(format!(
+                    "unhandled TagAssignmentResult variant: {other:?}"
+                )))
+            }
         };
 
         Ok(CallToolResult {
