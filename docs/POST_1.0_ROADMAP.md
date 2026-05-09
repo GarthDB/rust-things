@@ -1,7 +1,7 @@
 # Post-1.0.0 Roadmap
 
-**Last Updated**: January 2026  
-**Status**: Planning  
+**Last Updated**: May 2026  
+**Status**: Active Development  
 **Target Audience**: Contributors, users, maintainers
 
 ---
@@ -43,145 +43,89 @@ We strictly follow [Semantic Versioning 2.0.0](https://semver.org/):
 
 ## 1.x Series Roadmap
 
-### 1.1.0 (Q1 2026) - Enhanced Exports
+### 1.1.0 (2026-04-26) - Query Enhancements
 
-**Theme**: Additional export formats and options
+**Theme**: Powerful querying and filtering via the `advanced-queries` feature flag
 
-#### Planned Features
-- [ ] **Markdown Export Enhancements**
-  - Customizable templates (Obsidian, Notion, etc.)
-  - Frontmatter support (YAML, TOML)
-  - Wiki-link generation
-  - Tag and link resolution
-
-- [ ] **New Export Formats**
-  - iCalendar (`.ics`) for calendar integration
-  - TaskPaper format
-  - HTML export with templates
-  - Org-mode format
-
-- [ ] **Export Options**
-  - Filter by date range
-  - Include/exclude completed tasks
-  - Custom field selection
-  - Batch export of multiple formats
+#### Shipped Features
+- [x] **`TaskQueryBuilder`** — fluent builder with `.execute()` API
+- [x] **Natural-language date helpers** — `due_today`, `due_this_week`, `overdue`, etc.
+- [x] **Flexible tag filters** — `any_tags` (OR semantics), `exclude_tags` (NOT), `tag_count` (threshold)
+- [x] **Fuzzy search** — Levenshtein similarity scoring, `execute_ranked()` returning `Vec<RankedTask>`
+- [x] **Saved queries** — JSON-backed `SavedQueryStore` with `to_saved_query()` / `from_saved_query()`
+- [x] **Boolean filter expressions** — `FilterExpr` supporting And/Or/Not/Pred combinators
 
 #### Implementation Status
-- **Status**: Planning
-- **Est. Effort**: Medium (2-3 weeks)
-- **Breaking**: No
-- **Feature Flag**: `export-markdown-enhanced`, `export-ical`, etc.
-
----
-
-### 1.2.0 (Q2 2026) - Query Enhancements
-
-**Theme**: More powerful querying and filtering
-
-#### Planned Features
-- [ ] **Advanced Filters**
-  - Complex boolean expressions (AND, OR, NOT)
-  - Date range queries (last week, next month, etc.)
-  - Tag combinations and exclusions
-  - Custom field queries
-
-- [ ] **Query Builder API**
-  - Fluent interface for building queries
-  - Type-safe query construction
-  - Query optimization hints
-  - Explain query plans
-
-- [ ] **Saved Queries**
-  - Store and reuse common queries
-  - Query templates
-  - Parameterized queries
-  - Query performance tracking
-
-- [ ] **Full-Text Search Improvements**
-  - Fuzzy matching
-  - Stemming support
-  - Relevance scoring
-  - Search result highlighting
-
-#### Implementation Status
-- **Status**: Exploration
-- **Est. Effort**: Large (4-6 weeks)
+- **Status**: Released — 2026-04-26
 - **Breaking**: No
 - **Feature Flag**: `advanced-queries`
 
 ---
 
-### 1.3.0 (Q3 2026) - Performance & Scale
+### 1.2.0 (2026-04-27) - Performance & Caching
 
-**Theme**: Handling larger databases efficiently
+**Theme**: Cursor-based pagination, streaming results, and smarter cache invalidation via the `batch-operations` feature flag
 
-#### Planned Features
-- [ ] **Pagination Support**
-  - Cursor-based pagination
-  - Offset/limit pagination
-  - Streaming results
-  - Lazy loading
-
-- [ ] **Batch Operations**
-  - Bulk updates with transactions
-  - Batch exports
-  - Parallel query execution
-  - Progress reporting
-
-- [ ] **Caching Improvements**
-  - Smarter cache invalidation
-  - Predictive preloading
-  - Cache warming strategies
-  - Memory-mapped cache option
-
-- [ ] **Database Optimization**
-  - Automatic VACUUM scheduling
-  - Index optimization suggestions
-  - Query plan analysis
-  - Performance profiling tools
+#### Shipped Features
+- [x] **Cursor-based pagination** — `execute_paged()` anchoring on `(creationDate, uuid)` for stable cursors under concurrent edits
+- [x] **Streaming API** — `execute_stream()` returning `Pin<Box<dyn Stream<Item = Result<Task>> + Send>>`
+- [x] **Predictive cache preloading** — `CachePreloader` trait with `DefaultPreloader` heuristics (inbox↔today, areas→projects)
+- [x] **Dependency-based cache invalidation** — evicts only affected cache entries rather than flushing the entire cache
+- [x] **`ThingsCacheInvalidationHandler`** — bridges middleware mutation events to targeted cache eviction
 
 #### Implementation Status
-- **Status**: Exploration
-- **Est. Effort**: Large (5-7 weeks)
+- **Status**: Released — 2026-04-27
 - **Breaking**: No
-- **Feature Flag**: Various
+- **Feature Flag**: `batch-operations`
 
 ---
 
-### 1.4.0 (Q4 2026) - Integration & Ecosystem
+### 1.3.0 (2026-04-27) - Export Formats
 
-**Theme**: Better integration with other tools
+**Theme**: New structured export formats for external tool integration
 
-#### Planned Features
-- [ ] **Webhook Support**
-  - Task change notifications
-  - Custom webhook handlers
-  - Retry logic
-  - Webhook verification
-
-- [ ] **External Sync**
-  - Export to external systems (Todoist, Trello, etc.)
-  - Two-way sync (cautious approach)
-  - Conflict resolution
-  - Sync status tracking
-
-- [ ] **Plugin System**
-  - Loadable plugins (via dynamic linking or WASM)
-  - Plugin API stabilization
-  - Plugin marketplace (future)
-  - Example plugins
-
-- [ ] **More Integration Examples**
-  - GitHub Actions integration
-  - CI/CD pipelines
-  - Notification systems (Slack, Discord, etc.)
-  - Data visualization tools
+#### Shipped Features
+- [x] **TaskPaper export** — plain-text format for task management apps (`export-taskpaper` feature flag)
+- [x] **iCalendar export** — `.ics` files for calendar integration (`export-ical` feature flag)
 
 #### Implementation Status
-- **Status**: Research
-- **Est. Effort**: X-Large (8-10 weeks)
+- **Status**: Released — 2026-04-27
 - **Breaking**: No
-- **Feature Flag**: `webhooks`, `plugins`, etc.
+- **Feature Flag**: `export-taskpaper`, `export-ical`
+
+---
+
+### 1.4.0 (2026-04-28) - Agent Skills & Ecosystem
+
+**Theme**: First-class AI agent integration via a curated skill catalog
+
+#### Shipped Features
+- [x] **`things3` foundational agent skill** — full 46-tool catalog reconciled from prior 21-tool list
+- [x] **`things3-daily-review` skill** — structured workflow for morning standups and end-of-day reviews
+- [x] **Skills catalog README with CI validation**
+
+#### Implementation Status
+- **Status**: Released — 2026-04-28
+- **Breaking**: No
+- **Feature Flag**: None
+
+---
+
+### 1.5.0 (Q2 2026) - AppleScript-First Writes & API Hardening
+
+**Theme**: Promote `AppleScriptBackend` to the default mutation path, adopt `ThingsId` throughout the public API, and harden the public API surface
+
+#### Planned Features
+- [ ] **`AppleScriptBackend` as default** — macOS mutations default to AppleScript; direct SQLite writes require `--unsafe-direct-db` opt-in; Linux/CI continues with `SqlxBackend`
+- [ ] **`ThingsId` type** — replaces `Uuid` throughout the public API; transparent newtype accepting both RFC-4122 UUIDs and Things-native 21–22-char base62 IDs
+- [ ] **Bulk create atomicity** — `bulk_create_tasks` is atomic with rollback on failure
+- [ ] **MCP connection resilience** — handler errors no longer drop the JSON-RPC connection
+- [ ] **Public API hardening** — explicit `pub use` re-exports in `lib.rs`, `#[non_exhaustive]` on all new public types, `pub → pub(crate)` audit
+
+#### Implementation Status
+- **Status**: In Progress (Unreleased)
+- **Breaking**: Yes (`ThingsId` replaces `Uuid` in public API)
+- **Feature Flag**: None (default behavior change)
 
 ---
 
@@ -419,17 +363,20 @@ We'll provide quarterly roadmap updates:
 
 ## Summary
 
-**Near-term** (1.x):
-- Enhanced exports and query capabilities
-- Performance improvements
-- Better ecosystem integration
-- All backward compatible
+**Released** (1.1–1.4, April 2026):
+- Advanced query builder with fuzzy search, boolean expressions, saved queries
+- Cursor-based pagination and streaming results with smarter cache invalidation
+- TaskPaper and iCalendar export formats
+- First-class AI agent skills catalog
+
+**In Progress** (1.5):
+- `AppleScriptBackend` as default on macOS; `ThingsId` type throughout public API
+- Public API hardening (`#[non_exhaustive]`, explicit re-exports)
 
 **Mid-term** (2.0):
 - API evolution with breaking changes
-- Write support (opt-in)
-- Alternative backends
-- Enhanced type safety
+- Granular error types, async traits, builder-pattern configuration
+- Alternative backends (PostgreSQL, in-memory)
 
 **Long-term** (3.0+):
 - Advanced features (AI, collaboration, etc.)
