@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     database::{validators, ThingsDatabase},
     error::{Result as ThingsResult, ThingsError},

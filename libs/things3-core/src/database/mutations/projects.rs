@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     database::{
         conversions::naive_date_to_things_timestamp, query_builders::TaskUpdateBuilder, validators,

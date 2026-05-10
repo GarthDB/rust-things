@@ -1,4 +1,5 @@
 //! Batch fetch-by-id primitives on [`ThingsDatabase`].
+#![allow(deprecated)]
 //!
 //! Two methods extend [`ThingsDatabase`] when the `batch-operations` feature
 //! is enabled:

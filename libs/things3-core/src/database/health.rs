@@ -1,4 +1,5 @@
 //! Health check and metrics methods for `ThingsDatabase`.
+#![allow(deprecated)]
 
 use crate::{
     database::{

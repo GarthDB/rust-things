@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     database::pool::{apply_sqlite_optimizations, DatabasePoolConfig},
     error::{Result as ThingsResult, ThingsError},

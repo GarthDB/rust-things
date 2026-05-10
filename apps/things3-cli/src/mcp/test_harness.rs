@@ -1,5 +1,4 @@
 //! Test harness for MCP server testing
-#![allow(deprecated)]
 
 use crate::mcp::{
     CallToolRequest, CallToolResult, Content, GetPromptRequest, GetPromptResult, McpError,
@@ -32,6 +31,7 @@ impl McpTestHarness {
     /// # Panics
     /// Panics if the database cannot be creationDate or the server cannot be initialized
     #[must_use]
+    #[allow(deprecated)]
     pub fn new_with_config(middleware_config: crate::mcp::MiddlewareConfig) -> Self {
         let temp_file = NamedTempFile::new().unwrap();
         let db_path = temp_file.path().to_path_buf();

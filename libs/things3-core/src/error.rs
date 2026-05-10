@@ -60,7 +60,7 @@ pub enum ThingsError {
 
     #[deprecated(
         since = "2.1.0",
-        note = "Will be removed in 3.0. Use a domain-specific error variant instead."
+        note = "Will be removed in 3.0. Use a specific variant such as ThingsError::Validation or ThingsError::Configuration instead."
     )]
     #[error("Unknown error: {message}")]
     Unknown { message: String },
@@ -82,6 +82,10 @@ impl ThingsError {
     }
 
     /// Create an unknown error
+    #[deprecated(
+        since = "2.1.0",
+        note = "Will be removed in 3.0. Use a specific constructor such as ThingsError::validation() or ThingsError::configuration() instead."
+    )]
     #[allow(deprecated)]
     pub fn unknown(message: impl Into<String>) -> Self {
         Self::Unknown {

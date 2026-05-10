@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 async fn dashboard_home(State(_state): State<DashboardState>) -> Html<&'static str> {
     Html(include_str!("dashboard.html"))
 }
@@ -250,6 +248,7 @@ pub async fn start_dashboard_server(
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use tempfile::NamedTempFile;

@@ -1,4 +1,5 @@
 //! Timestamp, date, tag-blob conversions and small enum mappers.
+#![allow(deprecated)]
 //!
 //! Things 3 stores dates as seconds since 2001-01-01 UTC (a `REAL` column for
 //! creation/modification, `INTEGER` for start/deadline). These helpers convert

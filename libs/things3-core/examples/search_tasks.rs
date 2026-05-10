@@ -1,7 +1,6 @@
 //! Task search example
 //!
 //! Run with: cargo run --example search_tasks -- "meeting"
-#![allow(deprecated)]
 
 use std::env;
 use things3_core::{ThingsConfig, ThingsDatabase};
@@ -15,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Connect to database
     let config = ThingsConfig::from_env();
-    let db = ThingsDatabase::new(&config.database_path).await?;
+    let db = ThingsDatabase::new(&config.get_effective_database_path()?).await?;
 
     // Search tasks
     let results = db.search_tasks(&query).await?;
