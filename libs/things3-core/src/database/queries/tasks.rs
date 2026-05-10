@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 #[cfg(feature = "advanced-queries")]
 use crate::database::conversions::naive_date_to_things_timestamp;
 #[cfg(feature = "advanced-queries")]

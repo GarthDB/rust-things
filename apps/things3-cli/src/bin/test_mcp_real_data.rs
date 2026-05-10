@@ -1,4 +1,5 @@
 //! Test binary for Things3 MCP with real user data
+#![allow(deprecated)]
 //!
 //! This binary provides a safe way to test the MCP implementation using
 //! your actual Things 3 database in read-only mode.

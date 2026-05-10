@@ -1,4 +1,5 @@
 //! Connection pool configuration, optimizations, and health/metrics types.
+#![allow(deprecated)]
 
 use crate::database::stats::DatabaseStats;
 use crate::error::{Result as ThingsResult, ThingsError};

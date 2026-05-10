@@ -248,6 +248,7 @@ pub async fn start_dashboard_server(
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use tempfile::NamedTempFile;

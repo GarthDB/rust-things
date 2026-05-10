@@ -9,6 +9,10 @@ pub type Result<T> = std::result::Result<T, ThingsError>;
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum ThingsError {
+    #[deprecated(
+        since = "2.1.0",
+        note = "Will be replaced by domain-specific error types in 3.0. See the planned ThingsDatabaseError."
+    )]
     #[error("Database error: {0}")]
     Database(String),
 
@@ -54,6 +58,10 @@ pub enum ThingsError {
     #[error("AppleScript automation failed: {message}")]
     AppleScript { message: String },
 
+    #[deprecated(
+        since = "2.1.0",
+        note = "Will be removed in 3.0. Use a specific variant such as ThingsError::Validation or ThingsError::Configuration instead."
+    )]
     #[error("Unknown error: {message}")]
     Unknown { message: String },
 }
@@ -74,6 +82,11 @@ impl ThingsError {
     }
 
     /// Create an unknown error
+    #[deprecated(
+        since = "2.1.0",
+        note = "Will be removed in 3.0. Use a specific constructor such as ThingsError::validation() or ThingsError::configuration() instead."
+    )]
+    #[allow(deprecated)]
     pub fn unknown(message: impl Into<String>) -> Self {
         Self::Unknown {
             message: message.into(),
@@ -89,6 +102,7 @@ impl ThingsError {
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::io;

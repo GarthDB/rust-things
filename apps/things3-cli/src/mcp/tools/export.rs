@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::mcp::{expand_tilde, CallToolResult, Content, McpError, McpResult, ThingsMcpServer};
 use serde_json::Value;
 use things3_core::{DataExporter, ExportData, ExportFormat};

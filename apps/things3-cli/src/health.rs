@@ -161,6 +161,7 @@ pub async fn start_health_server(
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use tempfile::NamedTempFile;

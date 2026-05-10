@@ -1,4 +1,5 @@
 //! Bulk operations with progress tracking
+#![allow(deprecated)]
 
 use crate::events::{EventBroadcaster, EventType};
 use crate::progress::{ProgressManager, ProgressTracker};

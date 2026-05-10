@@ -1,6 +1,7 @@
 //! Tool-related tests for MCP server
 
 #![cfg(feature = "mcp-server")]
+#![allow(deprecated)]
 
 use super::common::create_test_mcp_server;
 use serde_json::json;

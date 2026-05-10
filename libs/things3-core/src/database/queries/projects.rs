@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     database::{conversions::safe_timestamp_convert, mappers::map_project_row, ThingsDatabase},
     error::{Result as ThingsResult, ThingsError},

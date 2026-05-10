@@ -1,4 +1,5 @@
 //! Entity validation utilities for database operations
+#![allow(deprecated)]
 //!
 //! This module provides centralized validation functions to ensure
 //! referenced entities (tasks, projects, areas) exist before performing operations.

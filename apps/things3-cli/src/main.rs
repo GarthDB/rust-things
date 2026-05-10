@@ -18,6 +18,7 @@ use tracing::{error, info};
 
 #[tokio::main]
 #[allow(clippy::too_many_lines)]
+#[allow(deprecated)]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -196,6 +197,7 @@ This flag exists for emergency recovery only and will be removed.
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::io::Cursor;

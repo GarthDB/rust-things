@@ -1,4 +1,5 @@
 //! Test utilities and mock data for Things 3 integration
+#![allow(deprecated)]
 
 use crate::{
     models::{Area, CreateTaskRequest, Project, Task, TaskStatus, TaskType, ThingsId},

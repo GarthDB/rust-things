@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Connect to database
     let config = ThingsConfig::from_env();
-    let db = ThingsDatabase::new(&config.database_path).await?;
+    let db = ThingsDatabase::new(&config.get_effective_database_path()?).await?;
 
     // Get data
     println!("Fetching data...");

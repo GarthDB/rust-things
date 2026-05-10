@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::mcp::{CallToolResult, Content, McpError, McpResult, ThingsMcpServer};
 use serde_json::Value;
 use std::str::FromStr;

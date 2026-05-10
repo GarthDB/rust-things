@@ -324,6 +324,7 @@ pub async fn start_metrics_collection(
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::sync::Arc;

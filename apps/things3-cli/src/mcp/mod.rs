@@ -1,4 +1,5 @@
 //! MCP (Model Context Protocol) server implementation for Things 3 integration
+#![allow(deprecated)]
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -383,6 +384,7 @@ pub type McpResult<T> = std::result::Result<T, McpError>;
 
 /// From trait implementations for common error types
 impl From<ThingsError> for McpError {
+    #[allow(deprecated)]
     fn from(error: ThingsError) -> Self {
         match error {
             ThingsError::Database(e) => {
