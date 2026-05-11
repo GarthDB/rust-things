@@ -12,6 +12,7 @@ pub struct ThingsConfig {
 }
 
 /// Builder for [`ThingsConfig`].
+#[non_exhaustive]
 #[derive(Debug, Default)]
 pub struct ThingsConfigBuilder {
     database_path: Option<PathBuf>,
@@ -19,11 +20,13 @@ pub struct ThingsConfigBuilder {
 }
 
 impl ThingsConfigBuilder {
+    #[must_use]
     pub fn database_path(mut self, path: impl AsRef<Path>) -> Self {
         self.database_path = Some(path.as_ref().to_path_buf());
         self
     }
 
+    #[must_use]
     pub fn fallback_to_default(mut self, fallback: bool) -> Self {
         self.fallback_to_default = fallback;
         self
@@ -42,6 +45,7 @@ impl ThingsConfigBuilder {
 
 impl ThingsConfig {
     /// Returns a new builder for [`ThingsConfig`].
+    #[must_use]
     pub fn builder() -> ThingsConfigBuilder {
         ThingsConfigBuilder::default()
     }
