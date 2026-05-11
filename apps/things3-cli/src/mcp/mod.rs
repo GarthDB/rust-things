@@ -8,7 +8,7 @@ use std::sync::Arc;
 use things3_core::AppleScriptBackend;
 use things3_core::{
     BackupManager, DataExporter, McpServerConfig, MutationBackend, PerformanceMonitor, SqlxBackend,
-    ThingsCache, ThingsConfig, ThingsDatabase, ThingsError,
+    ThingsCache, ThingsConfig, ThingsDatabase, ThingsDatabaseError, ThingsError, ThingsQueryError,
 };
 use thiserror::Error;
 use tokio::sync::Mutex;
@@ -387,43 +387,55 @@ impl From<ThingsError> for McpError {
     #[allow(deprecated)]
     fn from(error: ThingsError) -> Self {
         match error {
-            ThingsError::Database(e) => {
-                McpError::database_operation_failed("database operation", ThingsError::Database(e))
+            ThingsError::Database(db_err) => match db_err {
+                ThingsDatabaseError::Database(e) => McpError::database_operation_failed(
+                    "database operation",
+                    ThingsError::Database(ThingsDatabaseError::Database(e)),
+                ),
+                ThingsDatabaseError::DatabaseNotFound { path } => {
+                    McpError::configuration_error(format!("Database not found at: {path}"))
+                }
+                ThingsDatabaseError::TaskNotFound { uuid } => {
+                    McpError::validation_error(format!("Task not found: {uuid}"))
+                }
+                ThingsDatabaseError::ProjectNotFound { uuid } => {
+                    McpError::validation_error(format!("Project not found: {uuid}"))
+                }
+                ThingsDatabaseError::AreaNotFound { uuid } => {
+                    McpError::validation_error(format!("Area not found: {uuid}"))
+                }
+                ThingsDatabaseError::InvalidCursor(message) => {
+                    McpError::validation_error(format!("Invalid cursor: {message}"))
+                }
+                ThingsDatabaseError::AppleScript { message } => {
+                    McpError::internal_error(format!("AppleScript automation failed: {message}"))
+                }
+                ThingsDatabaseError::Configuration { message } => {
+                    McpError::configuration_error(message)
+                }
+                e => McpError::internal_error(format!("unhandled database error: {e:?}")),
+            },
+            ThingsError::Query(q_err) => match q_err {
+                ThingsQueryError::InvalidUuid { uuid } => {
+                    McpError::validation_error(format!("Invalid UUID format: {uuid}"))
+                }
+                ThingsQueryError::InvalidDate { date } => {
+                    McpError::validation_error(format!("Invalid date format: {date}"))
+                }
+                ThingsQueryError::DateValidation(e) => {
+                    McpError::validation_error(format!("Date validation failed: {e}"))
+                }
+                ThingsQueryError::DateConversion(e) => {
+                    McpError::validation_error(format!("Date conversion failed: {e}"))
+                }
+                e => McpError::internal_error(format!("unhandled query error: {e:?}")),
+            },
+            ThingsError::Export(ex_err) => {
+                McpError::internal_error(format!("Export error: {ex_err}"))
             }
             ThingsError::Serialization(e) => McpError::serialization_failed("serialization", e),
             ThingsError::Io(e) => McpError::io_operation_failed("io operation", e),
-            ThingsError::DatabaseNotFound { path } => {
-                McpError::configuration_error(format!("Database not found at: {path}"))
-            }
-            ThingsError::InvalidUuid { uuid } => {
-                McpError::validation_error(format!("Invalid UUID format: {uuid}"))
-            }
-            ThingsError::InvalidDate { date } => {
-                McpError::validation_error(format!("Invalid date format: {date}"))
-            }
-            ThingsError::TaskNotFound { uuid } => {
-                McpError::validation_error(format!("Task not found: {uuid}"))
-            }
-            ThingsError::ProjectNotFound { uuid } => {
-                McpError::validation_error(format!("Project not found: {uuid}"))
-            }
-            ThingsError::AreaNotFound { uuid } => {
-                McpError::validation_error(format!("Area not found: {uuid}"))
-            }
             ThingsError::Validation { message } => McpError::validation_error(message),
-            ThingsError::InvalidCursor(message) => {
-                McpError::validation_error(format!("Invalid cursor: {message}"))
-            }
-            ThingsError::Configuration { message } => McpError::configuration_error(message),
-            ThingsError::DateValidation(e) => {
-                McpError::validation_error(format!("Date validation failed: {e}"))
-            }
-            ThingsError::DateConversion(e) => {
-                McpError::validation_error(format!("Date conversion failed: {e}"))
-            }
-            ThingsError::AppleScript { message } => {
-                McpError::internal_error(format!("AppleScript automation failed: {message}"))
-            }
             ThingsError::Unknown { message } => McpError::internal_error(message),
             e => McpError::internal_error(format!("unhandled Things error: {e:?}")),
         }

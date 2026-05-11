@@ -4,7 +4,7 @@
 //! This module provides centralized validation functions to ensure
 //! referenced entities (tasks, projects, areas) exist before performing operations.
 
-use crate::error::{Result as ThingsResult, ThingsError};
+use crate::error::{Result as ThingsResult, ThingsDatabaseError, ThingsError};
 use crate::models::ThingsId;
 use sqlx::SqlitePool;
 use tracing::instrument;
@@ -44,9 +44,10 @@ pub async fn validate_project_exists(pool: &SqlitePool, id: &ThingsId) -> Things
         .is_some();
 
     if !exists {
-        return Err(ThingsError::ProjectNotFound {
+        return Err(ThingsDatabaseError::ProjectNotFound {
             uuid: id.to_string(),
-        });
+        }
+        .into());
     }
     Ok(())
 }

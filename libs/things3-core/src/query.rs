@@ -404,12 +404,12 @@ impl TaskQueryBuilder {
         db: &crate::database::ThingsDatabase,
     ) -> crate::error::Result<crate::cursor::Page<crate::models::Task>> {
         if self.fuzzy_query.is_some() {
-            return Err(crate::error::ThingsError::InvalidCursor(
+            return Err(crate::error::ThingsDatabaseError::InvalidCursor(
                 "execute_paged and execute_stream do not support fuzzy_search; use execute_ranked instead".to_string(),
             ));
         }
         if self.filters.offset.is_some() && self.after.is_some() {
-            return Err(crate::error::ThingsError::InvalidCursor(
+            return Err(crate::error::ThingsDatabaseError::InvalidCursor(
                 "offset and after are mutually exclusive".to_string(),
             ));
         }
@@ -462,7 +462,7 @@ impl TaskQueryBuilder {
                 .last()
                 .map(|last| {
                     let u = uuid::Uuid::parse_str(last.uuid.as_str()).map_err(|e| {
-                        crate::error::ThingsError::InvalidCursor(format!(
+                        crate::error::ThingsDatabaseError::InvalidCursor(format!(
                             "task uuid is not RFC-4122: {e}"
                         ))
                     })?;
@@ -879,7 +879,9 @@ mod tests {
                 .execute_paged(&db)
                 .await;
             match result {
-                Err(crate::error::ThingsError::InvalidCursor(msg)) => {
+                Err(crate::error::ThingsError::Database(
+                    crate::error::ThingsDatabaseError::InvalidCursor(msg),
+                )) => {
                     assert!(msg.contains("offset and after"), "msg: {msg}");
                 }
                 other => panic!("expected InvalidCursor, got {other:?}"),
@@ -904,7 +906,9 @@ mod tests {
                 .execute_paged(&db)
                 .await;
             match result {
-                Err(crate::error::ThingsError::InvalidCursor(msg)) => {
+                Err(crate::error::ThingsError::Database(
+                    crate::error::ThingsDatabaseError::InvalidCursor(msg),
+                )) => {
                     assert!(msg.contains("fuzzy"), "msg: {msg}");
                 }
                 other => panic!("expected InvalidCursor, got {other:?}"),

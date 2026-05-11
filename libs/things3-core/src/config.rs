@@ -149,6 +149,7 @@ impl Default for ThingsConfig {
 #[allow(deprecated)]
 mod tests {
     use super::*;
+    use crate::error::ThingsDatabaseError;
     use serial_test::serial;
     use tempfile::NamedTempFile;
 
@@ -533,7 +534,7 @@ mod tests {
             assert!(result.is_err());
             let error = result.unwrap_err();
             match error {
-                ThingsError::Configuration { message } => {
+                ThingsError::Database(ThingsDatabaseError::Configuration { message }) => {
                     assert!(message.contains("Database not found at"));
                     assert!(message.contains("fallback is enabled but default path also not found"));
                 }
@@ -552,7 +553,7 @@ mod tests {
         assert!(result.is_err());
         let error = result.unwrap_err();
         match error {
-            ThingsError::Configuration { message } => {
+            ThingsError::Database(ThingsDatabaseError::Configuration { message }) => {
                 assert!(message.contains("Database not found at"));
                 assert!(message.contains("fallback is disabled"));
             }
@@ -765,7 +766,10 @@ mod tests {
         let result = config.get_effective_database_path();
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(matches!(error, ThingsError::Configuration { .. }));
+        assert!(matches!(
+            error,
+            ThingsError::Database(ThingsDatabaseError::Configuration { .. })
+        ));
     }
 
     #[test]
@@ -794,7 +798,10 @@ mod tests {
             "Expected error when both configured and default paths don't exist"
         );
         let error = result.unwrap_err();
-        assert!(matches!(error, ThingsError::Configuration { .. }));
+        assert!(matches!(
+            error,
+            ThingsError::Database(ThingsDatabaseError::Configuration { .. })
+        ));
 
         // Check the error message contains the expected text
         let error_message = format!("{error}");
