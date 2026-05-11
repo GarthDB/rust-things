@@ -7,7 +7,7 @@ use things3_core::models::{
     BulkCompleteRequest, BulkDeleteRequest, BulkMoveRequest, BulkUpdateDatesRequest,
 };
 use things3_core::test_utils::{create_test_database_and_connect, TaskRequestBuilder};
-use things3_core::{ThingsError, ThingsId};
+use things3_core::{ThingsDatabaseError, ThingsError, ThingsId, ThingsQueryError};
 
 // ============================================================================
 // Bulk Move Tests
@@ -138,7 +138,12 @@ async fn test_bulk_move_invalid_uuid() {
 
     let result = db.bulk_move(bulk_request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::TaskNotFound { .. })));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Database(
+            ThingsDatabaseError::TaskNotFound { .. }
+        ))
+    ));
 
     // Verify the valid task was NOT moved (transaction rolled back)
     let task = db.get_task_by_uuid(&valid_uuid).await.unwrap().unwrap();
@@ -166,7 +171,12 @@ async fn test_bulk_move_nonexistent_project() {
 
     let result = db.bulk_move(bulk_request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::ProjectNotFound { .. })));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Database(
+            ThingsDatabaseError::ProjectNotFound { .. }
+        ))
+    ));
 }
 
 // ============================================================================
@@ -268,7 +278,10 @@ async fn test_bulk_update_dates_invalid_range() {
 
     let result = db.bulk_update_dates(bulk_request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::DateValidation(_))));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Query(ThingsQueryError::DateValidation(_)))
+    ));
 }
 
 #[tokio::test]
@@ -294,7 +307,10 @@ async fn test_bulk_update_dates_merge_validation() {
 
     let result = db.bulk_update_dates(bulk_request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::DateValidation(_))));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Query(ThingsQueryError::DateValidation(_)))
+    ));
 }
 
 // ============================================================================
