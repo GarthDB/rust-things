@@ -1064,7 +1064,10 @@ async fn test_mcp_server_with_custom_middleware() {
         .unwrap();
 
     let db = ThingsDatabase::new(db_path).await.unwrap();
-    let config = ThingsConfig::new(db_path, false);
+    let config = ThingsConfig::builder()
+        .database_path(db_path)
+        .build()
+        .unwrap();
     let middleware_config = MiddlewareConfig::default();
 
     let server = ThingsMcpServer::with_middleware_config(db, config, middleware_config, true);

@@ -46,7 +46,10 @@ impl McpTestHarness {
         .join()
         .unwrap();
 
-        let config = ThingsConfig::new(&db_path, false);
+        let config = ThingsConfig::builder()
+            .database_path(&db_path)
+            .build()
+            .unwrap();
         let server = ThingsMcpServer::with_middleware_config(db, config, middleware_config, true);
 
         Self { server, temp_file }

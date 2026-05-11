@@ -80,13 +80,16 @@ This flag exists for emergency recovery only and will be removed.
 
     // Create configuration
     let config = if let Some(db_path) = cli.database {
-        ThingsConfig::new(db_path, cli.fallback_to_default)
+        ThingsConfig::builder()
+            .database_path(db_path)
+            .fallback_to_default(cli.fallback_to_default)
+            .build()?
     } else {
         ThingsConfig::from_env()
     };
 
     // Create database connection
-    let db = ThingsDatabase::new(&config.database_path).await?;
+    let db = ThingsDatabase::new(config.database_path()).await?;
     let db = Arc::new(db);
 
     match cli.command {
@@ -197,7 +200,6 @@ This flag exists for emergency recovery only and will be removed.
 }
 
 #[cfg(test)]
-#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::io::Cursor;
@@ -212,8 +214,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test inbox command
         let cli = Cli::try_parse_from(["things-cli", "inbox"]).unwrap();
@@ -235,8 +236,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test today command
         let cli = Cli::try_parse_from(["things-cli", "today"]).unwrap();
@@ -258,8 +258,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test projects command
         let cli = Cli::try_parse_from(["things-cli", "projects"]).unwrap();
@@ -287,8 +286,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test areas command
         let cli = Cli::try_parse_from(["things-cli", "areas"]).unwrap();
@@ -315,8 +313,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test search command
         let cli = Cli::try_parse_from(["things-cli", "search", "test"]).unwrap();
@@ -338,8 +335,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test health command
         let cli = Cli::try_parse_from(["things-cli", "health"]).unwrap();
@@ -358,8 +354,11 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let config = ThingsConfig::builder()
+            .database_path(db_path)
+            .build()
+            .unwrap();
+        let db = ThingsDatabase::new(config.database_path()).await.unwrap();
 
         // Test MCP command
         let cli = Cli::try_parse_from(["things-cli", "mcp"]).unwrap();
@@ -380,8 +379,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test with verbose flag
         let cli = Cli::try_parse_from(["things-cli", "--verbose", "inbox"]).unwrap();
@@ -415,8 +413,7 @@ mod tests {
         .unwrap();
         assert_eq!(cli.database, Some(db_path.to_path_buf()));
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         match cli.command {
             Commands::Inbox { limit } => {
@@ -440,8 +437,7 @@ mod tests {
         let cli = Cli::try_parse_from(["things-cli", "--fallback-to-default", "inbox"]).unwrap();
         assert!(cli.fallback_to_default);
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         match cli.command {
             Commands::Inbox { limit } => {
@@ -461,8 +457,7 @@ mod tests {
         let db_path = temp_file.path();
         create_test_database(db_path).await.unwrap();
 
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await.unwrap();
+        let db = ThingsDatabase::new(db_path).await.unwrap();
 
         // Test with limit
         let cli = Cli::try_parse_from(["things-cli", "inbox", "--limit", "5"]).unwrap();
@@ -484,14 +479,16 @@ mod tests {
         // Test configuration creation from environment
         let cli = Cli::try_parse_from(["things-cli", "inbox"]).unwrap();
 
-        // Test that config creation doesn't panic
         let config = if let Some(db_path) = cli.database {
-            ThingsConfig::new(db_path, cli.fallback_to_default)
+            ThingsConfig::builder()
+                .database_path(db_path)
+                .fallback_to_default(cli.fallback_to_default)
+                .build()
+                .unwrap()
         } else {
             ThingsConfig::from_env()
         };
 
-        // Just verify it creates a config (it might fail due to missing database, but that's ok)
         let _ = config;
     }
 
@@ -500,7 +497,6 @@ mod tests {
         let temp_file = NamedTempFile::new().unwrap();
         let db_path = temp_file.path();
 
-        // Test configuration creation with database path
         let cli = Cli::try_parse_from([
             "things-cli",
             "--database",
@@ -510,13 +506,15 @@ mod tests {
         .unwrap();
 
         let config = if let Some(db_path) = cli.database {
-            ThingsConfig::new(db_path, cli.fallback_to_default)
+            ThingsConfig::builder()
+                .database_path(db_path)
+                .fallback_to_default(cli.fallback_to_default)
+                .build()
+                .unwrap()
         } else {
             ThingsConfig::from_env()
         };
 
-        // This should work since we're providing a valid path
-        // Just verify it creates a config (ThingsConfig::new doesn't return a Result)
         let _ = config;
     }
 

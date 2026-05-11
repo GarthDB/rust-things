@@ -727,10 +727,10 @@ pub async fn start_mcp_server_with_config_generic<I: McpIo>(
     unsafe_direct_db: bool,
 ) -> things3_core::Result<()> {
     // Convert McpServerConfig to ThingsConfig for backward compatibility
-    let things_config = ThingsConfig::new(
-        mcp_config.database.path.clone(),
-        mcp_config.database.fallback_to_default,
-    );
+    let things_config = ThingsConfig::builder()
+        .database_path(&mcp_config.database.path)
+        .fallback_to_default(mcp_config.database.fallback_to_default)
+        .build()?;
 
     let server = Arc::new(tokio::sync::Mutex::new(
         ThingsMcpServer::new_with_mcp_config(db, things_config, mcp_config, unsafe_direct_db),
@@ -2603,7 +2603,10 @@ mod backend_selection_tests {
         .join()
         .unwrap();
 
-        let config = ThingsConfig::new(&db_path, false);
+        let config = ThingsConfig::builder()
+            .database_path(&db_path)
+            .build()
+            .unwrap();
         let server = ThingsMcpServer::new(Arc::new(db), config, unsafe_direct_db);
         (server, temp_file)
     }
