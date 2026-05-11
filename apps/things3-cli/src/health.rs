@@ -171,11 +171,8 @@ mod tests {
         let temp_file = NamedTempFile::new().unwrap();
         let db_path = temp_file.path();
 
-        let config = things3_core::ThingsConfig::new(db_path, false);
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let database = Arc::new(
-            rt.block_on(async { ThingsDatabase::new(&config.database_path).await.unwrap() }),
-        );
+        let database = Arc::new(rt.block_on(async { ThingsDatabase::new(db_path).await.unwrap() }));
 
         let observability = Arc::new(
             things3_core::ObservabilityManager::new(things3_core::ObservabilityConfig::default())
@@ -267,11 +264,8 @@ mod tests {
         let temp_file = NamedTempFile::new().unwrap();
         let db_path = temp_file.path();
 
-        let config = things3_core::ThingsConfig::new(db_path, false);
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let database = Arc::new(
-            rt.block_on(async { ThingsDatabase::new(&config.database_path).await.unwrap() }),
-        );
+        let database = Arc::new(rt.block_on(async { ThingsDatabase::new(db_path).await.unwrap() }));
 
         let observability = Arc::new(
             things3_core::ObservabilityManager::new(things3_core::ObservabilityConfig::default())
@@ -292,11 +286,8 @@ mod tests {
         let temp_file = NamedTempFile::new().unwrap();
         let db_path = temp_file.path();
 
-        let config = things3_core::ThingsConfig::new(db_path, false);
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let database = Arc::new(
-            rt.block_on(async { ThingsDatabase::new(&config.database_path).await.unwrap() }),
-        );
+        let database = Arc::new(rt.block_on(async { ThingsDatabase::new(db_path).await.unwrap() }));
 
         let observability = Arc::new(
             things3_core::ObservabilityManager::new(things3_core::ObservabilityConfig::default())

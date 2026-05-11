@@ -103,7 +103,7 @@ pub use cache_invalidation_middleware::{
     InvalidationEventType, InvalidationRule, InvalidationStats, InvalidationStrategy,
     ThingsCacheInvalidationHandler,
 };
-pub use config::ThingsConfig;
+pub use config::{ThingsConfig, ThingsConfigBuilder};
 pub use config_hot_reload::{
     ConfigChangeHandler, ConfigHotReloader, ConfigHotReloaderWithHandler,
     DefaultConfigChangeHandler,

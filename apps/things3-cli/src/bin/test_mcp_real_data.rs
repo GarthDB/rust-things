@@ -10,7 +10,7 @@ use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
-use things3_core::{ThingsConfig, ThingsDatabase};
+use things3_core::ThingsDatabase;
 use tracing::{error, info, warn};
 
 /// Test mode selection
@@ -102,8 +102,7 @@ impl TestRunner {
         info!("Setting up test environment...");
 
         // Create database connection in read-only mode
-        let config = ThingsConfig::new(db_path, false);
-        let db = ThingsDatabase::new(&config.database_path).await?;
+        let db = ThingsDatabase::new(&db_path).await?;
 
         Ok(Self {
             db: Arc::new(db),
