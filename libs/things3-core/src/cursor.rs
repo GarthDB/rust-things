@@ -61,8 +61,11 @@ impl Cursor {
         let bytes = URL_SAFE_NO_PAD
             .decode(self.0.as_bytes())
             .map_err(|e| ThingsQueryError::InvalidCursor(format!("base64 decode failed: {e}")))?;
-        serde_json::from_slice(&bytes)
-            .map_err(|e| ThingsQueryError::InvalidCursor(format!("payload parse failed: {e}")))
+        serde_json::from_slice(&bytes).map_err(|e| {
+            ThingsError::Query(ThingsQueryError::InvalidCursor(format!(
+                "payload parse failed: {e}"
+            )))
+        })
     }
 }
 

@@ -404,13 +404,15 @@ impl TaskQueryBuilder {
         db: &crate::database::ThingsDatabase,
     ) -> crate::error::Result<crate::cursor::Page<crate::models::Task>> {
         if self.fuzzy_query.is_some() {
-            return Err(crate::error::ThingsQueryError::InvalidCursor(
+            return Err(crate::error::ThingsError::Query(crate::error::ThingsQueryError::InvalidCursor(
                 "execute_paged and execute_stream do not support fuzzy_search; use execute_ranked instead".to_string(),
-            ));
+            )));
         }
         if self.filters.offset.is_some() && self.after.is_some() {
-            return Err(crate::error::ThingsQueryError::InvalidCursor(
-                "offset and after are mutually exclusive".to_string(),
+            return Err(crate::error::ThingsError::Query(
+                crate::error::ThingsQueryError::InvalidCursor(
+                    "offset and after are mutually exclusive".to_string(),
+                ),
             ));
         }
 
@@ -462,9 +464,11 @@ impl TaskQueryBuilder {
                 .last()
                 .map(|last| {
                     let u = uuid::Uuid::parse_str(last.uuid.as_str()).map_err(|e| {
-                        crate::error::ThingsQueryError::InvalidCursor(format!(
-                            "task uuid is not RFC-4122: {e}"
-                        ))
+                        crate::error::ThingsError::Query(
+                            crate::error::ThingsQueryError::InvalidCursor(format!(
+                                "task uuid is not RFC-4122: {e}"
+                            )),
+                        )
                     })?;
                     let payload = crate::cursor::CursorPayload { c: last.created, u };
                     crate::cursor::Cursor::encode(&payload)
