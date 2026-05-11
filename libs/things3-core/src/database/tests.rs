@@ -966,8 +966,8 @@ mod query_tasks_tests {
                 .fuzzy_search("anything")
                 .execute_stream(&db);
             match stream.next().await {
-                Some(Err(crate::error::ThingsError::Database(
-                    crate::error::ThingsDatabaseError::InvalidCursor(msg),
+                Some(Err(crate::error::ThingsError::Query(
+                    crate::error::ThingsQueryError::InvalidCursor(msg),
                 ))) => {
                     assert!(msg.contains("fuzzy"), "msg: {msg}");
                 }

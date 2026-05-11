@@ -28,9 +28,6 @@ pub enum ThingsDatabaseError {
     #[error("Area not found: {uuid}. The area may have been deleted. Verify the UUID or list all areas to find the correct one.")]
     AreaNotFound { uuid: String },
 
-    #[error("Invalid cursor: {0}")]
-    InvalidCursor(String),
-
     #[error("AppleScript automation failed: {message}")]
     AppleScript { message: String },
 
@@ -53,6 +50,9 @@ pub enum ThingsQueryError {
 
     #[error("Date conversion failed: {0}")]
     DateConversion(#[from] crate::database::DateConversionError),
+
+    #[error("Invalid cursor: {0}")]
+    InvalidCursor(String),
 }
 
 /// Export-specific errors (introduced in 3.0).
@@ -60,10 +60,10 @@ pub enum ThingsQueryError {
 #[derive(Error, Debug)]
 pub enum ThingsExportError {
     #[error("Export IO error: {0}")]
-    Io(String),
+    Io(#[from] std::io::Error),
 
     #[error("Export serialization error: {0}")]
-    Serialization(String),
+    Serialization(#[from] serde_json::Error),
 
     #[error("Export format unavailable: {message}")]
     FormatUnavailable { message: String },
@@ -473,7 +473,7 @@ mod tests {
     #[test]
     fn test_invalid_cursor_error() {
         let error: ThingsError =
-            ThingsDatabaseError::InvalidCursor("bad cursor data".to_string()).into();
+            ThingsQueryError::InvalidCursor("bad cursor data".to_string()).into();
         assert!(error.to_string().contains("Invalid cursor"));
         assert!(error.to_string().contains("bad cursor data"));
     }

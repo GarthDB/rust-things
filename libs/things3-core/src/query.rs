@@ -173,7 +173,7 @@ impl TaskQueryBuilder {
     /// The cursor identifies the last task delivered on the previous page;
     /// [`Self::execute_paged`] will return tasks strictly after it in the
     /// `(creationDate DESC, uuid DESC)` ordering. Mutually exclusive with
-    /// `.offset(...)` — `execute_paged` will return [`crate::error::ThingsError::InvalidCursor`]
+    /// `.offset(...)` — `execute_paged` will return [`crate::error::ThingsQueryError::InvalidCursor`]
     /// if both are set.
     ///
     /// Requires the `batch-operations` feature flag.
@@ -394,7 +394,7 @@ impl TaskQueryBuilder {
     ///
     /// # Errors
     ///
-    /// - [`crate::error::ThingsError::InvalidCursor`] if `.offset(...)` and
+    /// - [`crate::error::ThingsQueryError::InvalidCursor`] if `.offset(...)` and
     ///   `.after(...)` are both set, or if `.fuzzy_search(...)` and
     ///   `.after(...)` are both set, or if the cursor itself is malformed.
     /// - Any error returned by [`crate::database::ThingsDatabase::query_tasks`].
@@ -404,12 +404,12 @@ impl TaskQueryBuilder {
         db: &crate::database::ThingsDatabase,
     ) -> crate::error::Result<crate::cursor::Page<crate::models::Task>> {
         if self.fuzzy_query.is_some() {
-            return Err(crate::error::ThingsDatabaseError::InvalidCursor(
+            return Err(crate::error::ThingsQueryError::InvalidCursor(
                 "execute_paged and execute_stream do not support fuzzy_search; use execute_ranked instead".to_string(),
             ));
         }
         if self.filters.offset.is_some() && self.after.is_some() {
-            return Err(crate::error::ThingsDatabaseError::InvalidCursor(
+            return Err(crate::error::ThingsQueryError::InvalidCursor(
                 "offset and after are mutually exclusive".to_string(),
             ));
         }
@@ -462,7 +462,7 @@ impl TaskQueryBuilder {
                 .last()
                 .map(|last| {
                     let u = uuid::Uuid::parse_str(last.uuid.as_str()).map_err(|e| {
-                        crate::error::ThingsDatabaseError::InvalidCursor(format!(
+                        crate::error::ThingsQueryError::InvalidCursor(format!(
                             "task uuid is not RFC-4122: {e}"
                         ))
                     })?;
@@ -879,8 +879,8 @@ mod tests {
                 .execute_paged(&db)
                 .await;
             match result {
-                Err(crate::error::ThingsError::Database(
-                    crate::error::ThingsDatabaseError::InvalidCursor(msg),
+                Err(crate::error::ThingsError::Query(
+                    crate::error::ThingsQueryError::InvalidCursor(msg),
                 )) => {
                     assert!(msg.contains("offset and after"), "msg: {msg}");
                 }
@@ -906,8 +906,8 @@ mod tests {
                 .execute_paged(&db)
                 .await;
             match result {
-                Err(crate::error::ThingsError::Database(
-                    crate::error::ThingsDatabaseError::InvalidCursor(msg),
+                Err(crate::error::ThingsError::Query(
+                    crate::error::ThingsQueryError::InvalidCursor(msg),
                 )) => {
                     assert!(msg.contains("fuzzy"), "msg: {msg}");
                 }

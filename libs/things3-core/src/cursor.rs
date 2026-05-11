@@ -27,7 +27,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::error::{Result, ThingsDatabaseError, ThingsError};
+use crate::error::{Result, ThingsError, ThingsQueryError};
 
 /// Opaque pagination token. Constructed by
 /// [`crate::query::TaskQueryBuilder::execute_paged`] and round-tripped
@@ -58,11 +58,11 @@ impl Cursor {
 
     /// Decode the cursor back into its payload.
     pub(crate) fn decode(&self) -> Result<CursorPayload> {
-        let bytes = URL_SAFE_NO_PAD.decode(self.0.as_bytes()).map_err(|e| {
-            ThingsDatabaseError::InvalidCursor(format!("base64 decode failed: {e}"))
-        })?;
+        let bytes = URL_SAFE_NO_PAD
+            .decode(self.0.as_bytes())
+            .map_err(|e| ThingsQueryError::InvalidCursor(format!("base64 decode failed: {e}")))?;
         serde_json::from_slice(&bytes)
-            .map_err(|e| ThingsDatabaseError::InvalidCursor(format!("payload parse failed: {e}")))
+            .map_err(|e| ThingsQueryError::InvalidCursor(format!("payload parse failed: {e}")))
     }
 }
 
@@ -141,7 +141,7 @@ mod tests {
     fn test_cursor_rejects_invalid_base64() {
         let err = Cursor::from_str("!!!not base64!!!").unwrap_err();
         match err {
-            ThingsError::Database(ThingsDatabaseError::InvalidCursor(msg)) => {
+            ThingsError::Query(ThingsQueryError::InvalidCursor(msg)) => {
                 assert!(msg.contains("base64"))
             }
             other => panic!("expected InvalidCursor, got {other:?}"),
@@ -153,7 +153,7 @@ mod tests {
         let bogus = URL_SAFE_NO_PAD.encode(b"not json");
         let err = Cursor::from_str(&bogus).unwrap_err();
         match err {
-            ThingsError::Database(ThingsDatabaseError::InvalidCursor(msg)) => {
+            ThingsError::Query(ThingsQueryError::InvalidCursor(msg)) => {
                 assert!(msg.contains("payload parse failed"))
             }
             other => panic!("expected InvalidCursor, got {other:?}"),
@@ -165,7 +165,7 @@ mod tests {
         let bogus = URL_SAFE_NO_PAD.encode(b"{}");
         assert!(matches!(
             Cursor::from_str(&bogus),
-            Err(ThingsError::Database(ThingsDatabaseError::InvalidCursor(_)))
+            Err(ThingsError::Query(ThingsQueryError::InvalidCursor(_)))
         ));
     }
 

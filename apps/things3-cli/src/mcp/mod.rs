@@ -404,9 +404,6 @@ impl From<ThingsError> for McpError {
                 ThingsDatabaseError::AreaNotFound { uuid } => {
                     McpError::validation_error(format!("Area not found: {uuid}"))
                 }
-                ThingsDatabaseError::InvalidCursor(message) => {
-                    McpError::validation_error(format!("Invalid cursor: {message}"))
-                }
                 ThingsDatabaseError::AppleScript { message } => {
                     McpError::internal_error(format!("AppleScript automation failed: {message}"))
                 }
@@ -427,6 +424,9 @@ impl From<ThingsError> for McpError {
                 }
                 ThingsQueryError::DateConversion(e) => {
                     McpError::validation_error(format!("Date conversion failed: {e}"))
+                }
+                ThingsQueryError::InvalidCursor(message) => {
+                    McpError::validation_error(format!("Invalid cursor: {message}"))
                 }
                 e => McpError::internal_error(format!("unhandled query error: {e:?}")),
             },
