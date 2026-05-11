@@ -151,7 +151,8 @@ async fn test_from_traits() {
 #[tokio::test]
 async fn test_from_traits_comprehensive() {
     // Test all ThingsError variants
-    let db_error = things3_core::ThingsError::Database("TypeNotFound: test_column".to_string());
+    let db_error: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::Database("TypeNotFound: test_column".to_string()).into();
     let mcp_error: McpError = db_error.into();
     assert!(
         matches!(mcp_error, McpError::DatabaseOperationFailed { operation, .. } if operation == "database operation")
@@ -174,49 +175,59 @@ async fn test_from_traits_comprehensive() {
         matches!(mcp_error, McpError::IoOperationFailed { operation, .. } if operation == "io operation")
     );
 
-    let db_not_found = things3_core::ThingsError::DatabaseNotFound {
-        path: "/test/path".to_string(),
-    };
+    let db_not_found: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::DatabaseNotFound {
+            path: "/test/path".to_string(),
+        }
+        .into();
     let mcp_error: McpError = db_not_found.into();
     assert!(
         matches!(mcp_error, McpError::ConfigurationError { message } if message.contains("Database not found at: /test/path"))
     );
 
-    let invalid_uuid = things3_core::ThingsError::InvalidUuid {
+    let invalid_uuid: things3_core::ThingsError = things3_core::ThingsQueryError::InvalidUuid {
         uuid: "invalid-uuid".to_string(),
-    };
+    }
+    .into();
     let mcp_error: McpError = invalid_uuid.into();
     assert!(
         matches!(mcp_error, McpError::ValidationError { message } if message.contains("Invalid UUID format: invalid-uuid"))
     );
 
-    let invalid_date = things3_core::ThingsError::InvalidDate {
+    let invalid_date: things3_core::ThingsError = things3_core::ThingsQueryError::InvalidDate {
         date: "invalid-date".to_string(),
-    };
+    }
+    .into();
     let mcp_error: McpError = invalid_date.into();
     assert!(
         matches!(mcp_error, McpError::ValidationError { message } if message.contains("Invalid date format: invalid-date"))
     );
 
-    let task_not_found = things3_core::ThingsError::TaskNotFound {
-        uuid: "task-uuid".to_string(),
-    };
+    let task_not_found: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::TaskNotFound {
+            uuid: "task-uuid".to_string(),
+        }
+        .into();
     let mcp_error: McpError = task_not_found.into();
     assert!(
         matches!(mcp_error, McpError::ValidationError { message } if message.contains("Task not found: task-uuid"))
     );
 
-    let project_not_found = things3_core::ThingsError::ProjectNotFound {
-        uuid: "project-uuid".to_string(),
-    };
+    let project_not_found: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::ProjectNotFound {
+            uuid: "project-uuid".to_string(),
+        }
+        .into();
     let mcp_error: McpError = project_not_found.into();
     assert!(
         matches!(mcp_error, McpError::ValidationError { message } if message.contains("Project not found: project-uuid"))
     );
 
-    let area_not_found = things3_core::ThingsError::AreaNotFound {
-        uuid: "area-uuid".to_string(),
-    };
+    let area_not_found: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::AreaNotFound {
+            uuid: "area-uuid".to_string(),
+        }
+        .into();
     let mcp_error: McpError = area_not_found.into();
     assert!(
         matches!(mcp_error, McpError::ValidationError { message } if message.contains("Area not found: area-uuid"))
@@ -230,9 +241,11 @@ async fn test_from_traits_comprehensive() {
         matches!(mcp_error, McpError::ValidationError { message } if message == "test validation")
     );
 
-    let config_error = things3_core::ThingsError::Configuration {
-        message: "test config".to_string(),
-    };
+    let config_error: things3_core::ThingsError =
+        things3_core::ThingsDatabaseError::Configuration {
+            message: "test config".to_string(),
+        }
+        .into();
     let mcp_error: McpError = config_error.into();
     assert!(
         matches!(mcp_error, McpError::ConfigurationError { message } if message == "test config")

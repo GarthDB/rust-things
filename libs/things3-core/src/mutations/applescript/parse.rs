@@ -123,6 +123,7 @@ pub(crate) fn parse_atomic_bulk_create_result(stdout: &str) -> Result<BulkOperat
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ThingsDatabaseError;
 
     const SAMPLE_UUID: &str = "9d3f1e44-5c2a-4b8e-9c1f-7e2d8a4b3c5e";
     const SAMPLE_THINGS_ID: &str = "R4t2G8Q63aGZq4epMHNeCr";
@@ -188,7 +189,7 @@ mod tests {
     fn rejects_empty_input() {
         let err = extract_id("").unwrap_err();
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("could not extract ID"));
             }
             _ => panic!("expected AppleScript error, got {err:?}"),
@@ -243,7 +244,7 @@ mod tests {
     fn parse_bulk_rejects_garbage_header() {
         let err = parse_bulk_result("garbage", 1).unwrap_err();
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("unexpected output"));
             }
             _ => panic!("expected AppleScript error, got {err:?}"),
@@ -271,7 +272,7 @@ mod tests {
             parse_atomic_bulk_create_result("ROLLBACK: project id \"bad-uuid\" doesn't exist")
                 .unwrap_err();
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("rolled back"));
                 assert!(message.contains("bad-uuid"));
             }
@@ -283,7 +284,7 @@ mod tests {
     fn parse_atomic_bulk_create_rejects_garbage() {
         let err = parse_atomic_bulk_create_result("garbage").unwrap_err();
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("unexpected output"));
             }
             _ => panic!("expected AppleScript error, got {err:?}"),

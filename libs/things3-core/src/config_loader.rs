@@ -268,6 +268,7 @@ pub fn load_config_from_env() -> Result<McpServerConfig> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ThingsDatabaseError;
     use serial_test::serial;
     use std::sync::Mutex;
     use tempfile::TempDir;
@@ -539,7 +540,10 @@ mod tests {
         let result = loader.load();
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(matches!(error, ThingsError::Configuration { .. }));
+        assert!(matches!(
+            error,
+            ThingsError::Database(ThingsDatabaseError::Configuration { .. })
+        ));
     }
 
     #[test]

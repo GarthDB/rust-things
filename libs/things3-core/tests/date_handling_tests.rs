@@ -9,7 +9,7 @@ use things3_core::database::{
     is_valid_things_timestamp, parse_date_from_string, safe_naive_date_to_things_timestamp,
     safe_things_date_to_naive_date, validate_date_range, DateConversionError, DateValidationError,
 };
-use things3_core::ThingsError;
+use things3_core::{ThingsError, ThingsQueryError};
 
 #[cfg(feature = "test-utils")]
 use things3_core::test_utils::{create_test_database_and_connect, TaskRequestBuilder};
@@ -293,7 +293,10 @@ async fn test_create_task_with_invalid_dates() {
     // This should fail validation
     let result = db.create_task(request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::DateValidation(_))));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Query(ThingsQueryError::DateValidation(_)))
+    ));
 }
 
 #[cfg(feature = "test-utils")]
@@ -324,7 +327,10 @@ async fn test_update_task_deadline_before_start() {
     // This should fail validation
     let result = db.update_task(update_request).await;
     assert!(result.is_err());
-    assert!(matches!(result, Err(ThingsError::DateValidation(_))));
+    assert!(matches!(
+        result,
+        Err(ThingsError::Query(ThingsQueryError::DateValidation(_)))
+    ));
 }
 
 #[cfg(feature = "test-utils")]

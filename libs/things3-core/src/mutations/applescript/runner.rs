@@ -80,12 +80,13 @@ fn map_failure(stderr: &str) -> ThingsError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ThingsDatabaseError;
 
     #[test]
     fn map_failure_tcc_denied() {
         let err = map_failure("execution error: Not authorized to send Apple events. (-1743)");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("Automation permission denied"));
                 assert!(message.contains("System Settings"));
             }
@@ -98,7 +99,7 @@ mod tests {
         let err =
             map_failure("execution error: Things3 got an error: Application isn't running. (-600)");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("Things 3 is not running"));
             }
             _ => panic!("expected AppleScript error"),
@@ -109,7 +110,7 @@ mod tests {
     fn map_failure_not_installed() {
         let err = map_failure("execution error: NSWorkspaceNotFound (-10810)");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("not installed"));
             }
             _ => panic!("expected AppleScript error"),
@@ -120,7 +121,7 @@ mod tests {
     fn map_failure_generic() {
         let err = map_failure("syntax error: bad keyword");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("osascript failed"));
                 assert!(message.contains("syntax error"));
             }
@@ -132,7 +133,7 @@ mod tests {
     fn map_failure_trims_whitespace() {
         let err = map_failure("  some error\n");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert_eq!(message, "osascript failed: some error");
             }
             _ => panic!("expected AppleScript error"),
@@ -154,7 +155,7 @@ mod tests {
             .await
             .expect_err("script should fail");
         match err {
-            ThingsError::AppleScript { message } => {
+            ThingsError::Database(ThingsDatabaseError::AppleScript { message }) => {
                 assert!(message.contains("osascript failed"));
                 assert!(message.contains("deliberate failure"));
             }

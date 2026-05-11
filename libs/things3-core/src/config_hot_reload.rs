@@ -413,6 +413,7 @@ impl ConfigHotReloaderWithHandler {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ThingsDatabaseError;
     use std::time::Duration;
     use tempfile::NamedTempFile;
 
@@ -536,7 +537,10 @@ mod tests {
         let result = ConfigHotReloader::new(config, config_path, Duration::from_secs(1));
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(matches!(error, ThingsError::Configuration { .. }));
+        assert!(matches!(
+            error,
+            ThingsError::Database(ThingsDatabaseError::Configuration { .. })
+        ));
     }
 
     #[tokio::test]

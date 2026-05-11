@@ -114,7 +114,7 @@ pub use database::{
     PoolHealthStatus, PoolMetrics, SqliteOptimizations, ThingsDatabase,
 };
 pub use disk_cache::{DiskCache, DiskCacheConfig, DiskCacheStats};
-pub use error::{Result, ThingsError};
+pub use error::{Result, ThingsDatabaseError, ThingsError, ThingsExportError, ThingsQueryError};
 
 #[cfg(any(
     feature = "export-csv",

@@ -2,7 +2,7 @@
 
 use crate::{
     database::{conversions::naive_date_to_things_timestamp, validators, ThingsDatabase},
-    error::{Result as ThingsResult, ThingsError},
+    error::{Result as ThingsResult, ThingsDatabaseError, ThingsError},
 };
 use chrono::Utc;
 use sqlx::Row;
@@ -93,9 +93,10 @@ impl ThingsDatabase {
             for id in &request.task_uuids {
                 if !found_uuids.contains(&id.to_string()) {
                     tx.rollback().await.ok();
-                    return Err(ThingsError::TaskNotFound {
+                    return Err(ThingsDatabaseError::TaskNotFound {
                         uuid: id.to_string(),
-                    });
+                    }
+                    .into());
                 }
             }
         }
@@ -212,9 +213,10 @@ impl ThingsDatabase {
             for id in &request.task_uuids {
                 if !found_uuids.contains(&id.to_string()) {
                     tx.rollback().await.ok();
-                    return Err(ThingsError::TaskNotFound {
+                    return Err(ThingsDatabaseError::TaskNotFound {
                         uuid: id.to_string(),
-                    });
+                    }
+                    .into());
                 }
             }
         }
@@ -366,9 +368,10 @@ impl ThingsDatabase {
             for id in &request.task_uuids {
                 if !found_uuids.contains(&id.to_string()) {
                     tx.rollback().await.ok();
-                    return Err(ThingsError::TaskNotFound {
+                    return Err(ThingsDatabaseError::TaskNotFound {
                         uuid: id.to_string(),
-                    });
+                    }
+                    .into());
                 }
             }
         }
@@ -478,9 +481,10 @@ impl ThingsDatabase {
             for id in &request.task_uuids {
                 if !found_uuids.contains(&id.to_string()) {
                     tx.rollback().await.ok();
-                    return Err(ThingsError::TaskNotFound {
+                    return Err(ThingsDatabaseError::TaskNotFound {
                         uuid: id.to_string(),
-                    });
+                    }
+                    .into());
                 }
             }
         }

@@ -17,9 +17,11 @@ pub async fn create_test_database<P: AsRef<Path>>(db_path: P) -> crate::Result<(
     use sqlx::SqlitePool;
 
     let database_url = format!("sqlite:{}", db_path.as_ref().display());
-    let pool = SqlitePool::connect(&database_url)
-        .await
-        .map_err(|e| crate::ThingsError::Database(format!("Failed to connect to database: {e}")))?;
+    let pool = SqlitePool::connect(&database_url).await.map_err(|e| {
+        crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!(
+            "Failed to connect to database: {e}"
+        )))
+    })?;
 
     // Create the Things 3 schema - matches real database structure
     sqlx::query(
@@ -48,7 +50,11 @@ pub async fn create_test_database<P: AsRef<Path>>(db_path: P) -> crate::Result<(
     )
     .execute(&pool)
     .await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to create TMTask table: {e}")))?;
+    .map_err(|e| {
+        crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!(
+            "Failed to create TMTask table: {e}"
+        )))
+    })?;
 
     // Note: Projects are stored in TMTask table with type=1, no separate TMProject table
 
@@ -67,7 +73,11 @@ pub async fn create_test_database<P: AsRef<Path>>(db_path: P) -> crate::Result<(
     )
     .execute(&pool)
     .await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to create TMArea table: {e}")))?;
+    .map_err(|e| {
+        crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!(
+            "Failed to create TMArea table: {e}"
+        )))
+    })?;
 
     // Create TMTag table — schema mirrors real Things 3 (no creationDate/userModificationDate).
     sqlx::query(
@@ -85,7 +95,11 @@ pub async fn create_test_database<P: AsRef<Path>>(db_path: P) -> crate::Result<(
     )
     .execute(&pool)
     .await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to create TMTag table: {e}")))?;
+    .map_err(|e| {
+        crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!(
+            "Failed to create TMTag table: {e}"
+        )))
+    })?;
 
     // Create TMTaskTag join table — maps tasks to tags by UUID
     sqlx::query(
@@ -99,7 +113,11 @@ pub async fn create_test_database<P: AsRef<Path>>(db_path: P) -> crate::Result<(
     )
     .execute(&pool)
     .await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to create TMTaskTag table: {e}")))?;
+    .map_err(|e| {
+        crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!(
+            "Failed to create TMTaskTag table: {e}"
+        )))
+    })?;
 
     // Insert test data
     insert_test_data(&pool).await?;
@@ -134,7 +152,7 @@ async fn insert_test_data(pool: &sqlx::SqlitePool) -> crate::Result<()> {
         .bind(now) // userModificationDate
         .execute(pool)
         .await
-        .map_err(|e| crate::ThingsError::Database(format!("Failed to insert test area: {e}")))?;
+        .map_err(|e| crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!("Failed to insert test area: {e}"))))?;
 
     // Insert test projects (as TMTask with type=1)
     sqlx::query(
@@ -149,7 +167,7 @@ async fn insert_test_data(pool: &sqlx::SqlitePool) -> crate::Result<()> {
     .bind(now_timestamp)
     .bind(0) // Not trashed
     .execute(pool).await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to insert test project: {e}")))?;
+    .map_err(|e| crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!("Failed to insert test project: {e}"))))?;
 
     // Insert test tasks - one in inbox (no project), one in project
     let inbox_task_uuid = ThingsId::new_v4().into_string();
@@ -165,7 +183,7 @@ async fn insert_test_data(pool: &sqlx::SqlitePool) -> crate::Result<()> {
     .bind(now_timestamp)
     .bind(0) // Not trashed
     .execute(pool).await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to insert inbox test task: {e}")))?;
+    .map_err(|e| crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!("Failed to insert inbox test task: {e}"))))?;
 
     sqlx::query(
         "INSERT INTO TMTask (uuid, title, type, status, project, creationDate, userModificationDate, trashed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -179,7 +197,7 @@ async fn insert_test_data(pool: &sqlx::SqlitePool) -> crate::Result<()> {
     .bind(now_timestamp)
     .bind(0) // Not trashed
     .execute(pool).await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to insert test task: {e}")))?;
+    .map_err(|e| crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!("Failed to insert test task: {e}"))))?;
 
     // Insert a heading task (type=2) inside the project
     let heading_uuid = ThingsId::new_v4().into_string();
@@ -195,7 +213,7 @@ async fn insert_test_data(pool: &sqlx::SqlitePool) -> crate::Result<()> {
     .bind(now_timestamp)
     .bind(0) // Not trashed
     .execute(pool).await
-    .map_err(|e| crate::ThingsError::Database(format!("Failed to insert test heading: {e}")))?;
+    .map_err(|e| crate::ThingsError::Database(crate::ThingsDatabaseError::Database(format!("Failed to insert test heading: {e}"))))?;
 
     Ok(())
 }
@@ -805,8 +823,7 @@ mod tests {
 /// Returns an error if database creation or connection fails
 pub async fn create_test_database_and_connect(
 ) -> Result<(ThingsDatabase, NamedTempFile), crate::ThingsError> {
-    let temp_file = NamedTempFile::new()
-        .map_err(|e| crate::ThingsError::Database(format!("Failed to create temp file: {e}")))?;
+    let temp_file = NamedTempFile::new()?;
     let db_path = temp_file.path();
     create_test_database(db_path).await?;
     let db = ThingsDatabase::new(db_path).await?;
