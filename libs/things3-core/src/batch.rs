@@ -25,7 +25,7 @@ use std::collections::HashSet;
 use sqlx::{sqlite::SqliteRow, Row, SqlitePool};
 
 use crate::database::mappers::{map_project_row, map_task_row};
-use crate::database::SqliteSqliteThingsDatabase;
+use crate::database::SqliteThingsDatabase;
 use crate::error::{Result as ThingsResult, ThingsError};
 use crate::models::{Project, Task, ThingsId};
 
@@ -34,10 +34,10 @@ use crate::models::{Project, Task, ThingsId};
 /// long UUID lists without surfacing parameter-limit failures.
 const BATCH_CHUNK_SIZE: usize = 500;
 
-impl SqliteSqliteThingsDatabase {
+impl SqliteThingsDatabase {
     /// Fetch many tasks by UUID in a single batched query.
     ///
-    /// Mirrors [`SqliteSqliteThingsDatabase::get_task_by_uuid`]: trashed rows are omitted
+    /// Mirrors [`SqliteThingsDatabase::get_task_by_uuid`]: trashed rows are omitted
     /// and there is no task-type filter (a project or heading UUID will
     /// resolve to a [`Task`] mapped from its TMTask row, matching
     /// single-fetch loose semantics). Duplicate UUIDs are de-duplicated.
